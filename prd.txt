@@ -1,0 +1,75 @@
+Plate Math — Product Requirements Document
+Overview
+Plate Math is a single-player web/mobile game where players are shown a barbell loaded with plates and must quickly calculate the total weight. The aesthetic borrows from Suika Game and Rhythm Heaven — soft, chunky, satisfying visuals; bouncy animations when plates click onto the bar; a clean, playful palette. The skill being trained is the mental arithmetic every lifter does in the gym: spotting plate combinations at a glance and snapping to the right total.
+Goals
+The game should make plate math feel automatic. A novice should leave a session better at recognizing "two reds and a quarter per side, on a standard bar" as 315 lb. An experienced lifter should be tested on speed, weird combinations, and edge cases (training bars, fractional plates, kilo plates). Sessions should be short and replayable, with a satisfying tactile-visual loop on every round.
+Non-Goals
+Plate Math is not a workout tracker, a 1RM calculator, or a lifting program. It does not teach lifting technique. It is not a sim of any specific gym chain's equipment. It is not multiplayer in v1.
+Target Users
+Primary: people who lift recreationally and want a fun mental warmup or daily puzzle. Secondary: coaches and trainers who want a tool for clients learning gym math, and lifters who train in mixed-unit gyms (lb plates with kg bars, or vice versa) and want to drill conversion intuition.
+Core Gameplay Loop
+Each round, a barbell appears on screen with plates loaded symmetrically. The player taps or types the total weight. A correct answer triggers a satisfying confirmation animation — plates wiggle, a chime plays, the bar lifts off the rack slightly. A wrong answer shows the correct total with a gentle breakdown ("45 bar + 2×45 + 2×25 = 185"). The next round loads in.
+Rounds escalate in difficulty within a session. Early rounds are clean combinations (bar + one plate type per side). Later rounds mix plate sizes, throw in fractional plates, swap bar types, and occasionally use kilograms.
+A session is 10 rounds in Quick mode, 25 in Standard, or endless in Practice. Timer pressure is optional and adds a score multiplier.
+Visual Language
+Heavy borrow from Suika and Rhythm Heaven: rounded shapes, no hard edges, slight squash-and-stretch on every interaction. Plates are color-coded to real-world Olympic standards (red 45/55, blue 35, yellow 35, green 25, white 10, black 5/2.5) but stylized — slightly cartoonish, with a soft drop shadow and a subtle highlight that suggests rubber bumper plates. The bar is a chunky cylinder with knurling rendered as small repeating dots. Plates "click" onto the bar with a small bounce and a soft thud sound. When the player answers correctly, the whole barbell does a little hop.
+The background is a warm, low-contrast color (think the Suika game's gentle gradient), not a gym photograph. No equipment branding. Everything reads as toy-like rather than serious.
+Plate and Bar Inventory
+US/lb plates: 45, 35, 25, 10, 5, 2.5, 1.25 (and the rare 0.5 fractional plates for microloading).
+Kg plates: 25, 20, 15, 10, 5, 2.5, 1.25, 0.5, 0.25.
+Bars: 45 lb standard Olympic, 35 lb women's Olympic, 25 lb technique bar, 15 lb training bar, 20 kg standard Olympic, 15 kg women's Olympic, 10 kg technique. EZ-curl and trap bars deferred to v2.
+Each round randomly selects a bar and a plate loadout from the rules of the current difficulty band.
+Difficulty Progression
+Tier 1 (rounds 1–3 of a session): Standard 45 lb bar, one plate size per side, common combos. Targets: 135, 185, 225, 275, 315.
+Tier 2 (rounds 4–7): Standard bar, mixed plate sizes per side, still all whole numbers. Targets: 165, 205, 245, 295, 365, 405.
+Tier 3 (rounds 8–15): Non-standard bars (35 lb, training bars). Fractional plates introduced (2.5, 1.25). Less common totals: 192.5, 237.5, 322.5.
+Tier 4 (rounds 16+): Kilogram bars and plates appear. Mixed-unit rounds (a lb plate question right after a kg one) test unit-switching agility. Maximum difficulty includes asymmetric-looking but symmetric loads (e.g., 25 + 10 + 5 on each side, which reads chaotically but totals cleanly).
+Input Modes
+Two options, player-selectable:
+Number pad input: A chunky on-screen keypad for typing the total. Best for speed-runs and mobile.
+Multiple choice: Four answer buttons with one correct answer and three plausible distractors (off by one plate per side, or off by a bar swap). Best for beginners and for the daily puzzle.
+The default is multiple choice for the first session, number pad after the player demonstrates competence (gets 8 of 10 correct in a Quick session).
+Scoring
+Base points per correct answer scale with difficulty tier. Time bonus when timer mode is on: full bonus under three seconds, decaying to zero at fifteen seconds. Streak multiplier kicks in after three correct in a row, capped at 3× at a streak of 10. A wrong answer breaks the streak but doesn't end the session.
+Session score is the sum of round scores. Personal bests are tracked per session length and per mode.
+Daily Mode
+One five-round puzzle per day, same plates for all players, resets at local midnight. Players see their time and score, and can share a result string. Suggested share format: a row of plate emoji with a time underneath, in the spirit of Wordle's grid.
+Game Modes
+Quick (10 rounds, ~90 seconds): Default mode. Tiers 1–2 only. Good for a coffee-break play.
+Standard (25 rounds, ~4 minutes): Tiers 1–4. The main mode.
+Practice (endless): No score, no timer. Player picks a tier and a unit system (lb only, kg only, or mixed). Good for warming up or drilling weak spots.
+Speedrun (10 rounds, race the clock): Maximum-difficulty rounds only, timer always on. Leaderboard for daily best times.
+Plate ID (mini-mode): Instead of summing, the player taps the heaviest plate, or the second-heaviest, on a complex loadout. Trains color recognition.
+UI Surfaces
+Landing screen: Three primary buttons (Today's Puzzle, Quick Play, Practice) and a smaller link for Other Modes (Standard, Speedrun, Plate ID). Best scores shown small at the bottom.
+Round screen: Barbell centered, slightly lower than vertical midpoint. Answer input below. Round counter and current score top corners. Timer (when active) as a thin bar across the top, depleting.
+Post-round flash: Quarter-second on correct, full breakdown card on incorrect with a "Got it" button to continue.
+Post-session screen: Total score, accuracy, average time per round, shareable result, and CTAs for Play Again, Try Practice, and (for daily) See Distribution.
+Settings
+Unit preference (lb default / kg default / mixed). Sound toggles (chimes, plate thuds, ambient — separate sliders). Reduced motion option that swaps bouncy animations for crossfades. Colorblind mode that overlays a small number on each plate in addition to the color.
+Edge Cases and Gotchas
+The game must handle a few specific tricky-but-real situations:
+
+Collars/clips. Most gyms have 2.5 lb or 5 lb clips. Default off; togglable in settings as a "realism" option that adds clip weight to every round.
+Mixed plates per side. Common in real gyms (45 + 25 + 10 + 5 = 85 lb per side). Trained in tier 2 onward.
+Asymmetric loading. Never used. Plates are always symmetric. Asymmetric loads are a deload bar setup in real life but would feel like a trick question here.
+Fractional bar weights. The 15 lb training bar and 11 lb fitness bar exist. Used sparingly in tier 3+.
+Kilo plates dressed like lb plates. Real Olympic-spec kg plates have a different color code (red 25, blue 20, yellow 15, green 10) and are smaller in diameter than US 45s. Rendering should reflect this — kg plates look visibly more compact, lb plates have the chunkier US silhouette. This is a real visual cue lifters learn.
+
+Technical Notes
+Frontend: a single-page web app, mobile-first, built in React or Svelte. Canvas or SVG for the barbell rendering — SVG is probably easier given the chunky stylized look. Sound via the Web Audio API with small WAV samples. State is local; no account required.
+Backend: minimal. A small API for daily puzzle seed and anonymous score submission for leaderboards. Daily puzzle seeds generated by a deterministic function of the date so the server doesn't need a database for round content.
+Performance target: sixty FPS animations on a mid-range phone. Round loads in under 200ms.
+How to Play Screen
+A two-screen intro shown on first launch:
+Screen one: a quick visual key showing each plate color and its weight, with the same plate displayed in kg coloring next to it.
+Screen two: a single example round played in slow motion, with annotations pointing to the bar, the plates on each side, and the running sum: "45 bar, plus 45 + 45 on each side, equals 225 lb." A "Got it" button starts the first round.
+Success Metrics
+Daily active users, day-7 retention, share rate, median session length, and accuracy progression. Healthy v1 targets: 35% day-7 retention among players who complete a first session, share rate above 10% on daily mode, and measurable accuracy improvement (10+ percentage points) in tier 2 rounds between a player's first and tenth session.
+Risks
+The biggest risk is that experienced lifters bounce because the game is too easy and novices bounce because they can't read plate colors yet. The Plate ID mini-mode and the visual key on first launch address the novice side; tiers 3 and 4 with kg plates and fractional weights address the experienced side. Tuning the difficulty curve is the v1.1 priority based on observed accuracy.
+A secondary risk is that the satisfying-game-feel is genuinely hard to achieve. The Suika and Rhythm Heaven aesthetic isn't a stack of off-the-shelf assets — it's bespoke animation, sound design, and timing. A v1 that feels stiff or generic will not retain players. Worth budgeting real time for the juice: bounce easing curves, sound mixing, micro-animations on plate impact, screen shake on personal bests. This is the difference between a forgettable mental-math drill and a game people actually open daily.
+Open Questions
+Whether to add a "racked weight" mode showing the bar on a squat rack or bench rack with j-hooks, vs. always showing the bar floating against the background. Racked is more realistic; floating is cleaner and faster to render. Probably ship floating in v1 and prototype racked as a visual variant.
+Whether to add a "what plates" inverse mode: given a target weight, the player taps plates onto the bar. Interesting but a fundamentally different game loop. Could be a v2 spinoff.
+Whether to surface real-gym-relevant tips ("dropping from 225 to 205? pull the 10s, not the 25 and add a 15") in the post-session screen as flavor. Probably yes, sparingly, as a "Coach's Tip" easter egg every few sessions.
