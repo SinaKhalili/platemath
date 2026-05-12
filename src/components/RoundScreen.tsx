@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { MODES, type SessionState } from '../game/state'
 import { breakdown, formatTotal, type Round } from '../game/rounds'
 import { Barbell } from './Barbell'
+import { Confetti } from './Confetti'
 import { MultipleChoice } from './MultipleChoice'
 import { NumberPad } from './NumberPad'
 import { correctChime, plateCascade, tinyTap, wrongBuzz } from '../game/sound'
@@ -21,10 +22,12 @@ export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onTog
   const total = config.rounds === 'endless' ? '∞' : config.rounds
   const [picked, setPicked] = useState<number | null>(null)
 
-  // Reset multiple-choice pick state when round changes.
+  // Reset multiple-choice pick state when the round itself changes.
+  // Intentionally NOT depending on phase — the correct/wrong flash on the
+  // chosen card needs `picked` to persist into the reveal phase.
   useEffect(() => {
     setPicked(null)
-  }, [state.roundIndex, state.phase])
+  }, [state.roundIndex])
 
   // Play plate-drop sound when the round mounts.
   useEffect(() => {
@@ -82,7 +85,7 @@ export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onTog
 
       {/* Barbell */}
       <div className="flex-1 flex items-center justify-center py-4">
-        <div className="w-full">
+        <div className="w-full relative">
           <Barbell
             bar={round.bar}
             perSide={round.perSide}
@@ -90,6 +93,19 @@ export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onTog
             hop={showingResult && wasCorrect}
             shake={showingResult && !wasCorrect}
           />
+          {showingResult && wasCorrect && (
+            <>
+              <Confetti triggerKey={state.roundIndex} />
+              <div className="score-pop">
+                +{state.lastAnswer?.scoreEarned}
+                {multiplier > 1 ? (
+                  <span className="ml-2 text-2xl text-peach-400 align-middle">
+                    ×{multiplier.toFixed(2).replace(/\.?0+$/, '')}
+                  </span>
+                ) : null}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

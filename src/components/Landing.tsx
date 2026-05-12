@@ -29,7 +29,7 @@ export function Landing({ onStart, bests }: Props) {
         </div>
 
         <div className="card p-6 md:p-8 mt-4">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <button
               onClick={() => onStart('quick')}
               className="btn-chunky text-left flex-col items-start py-6"
@@ -47,6 +47,14 @@ export function Landing({ onStart, bests }: Props) {
               <div className="text-sm font-medium opacity-90 mt-1">25 rounds · tiers 1–4</div>
             </button>
             <button
+              onClick={() => onStart('realgym')}
+              className="btn-chunky btn-chunky--rose text-left flex-col py-6"
+              style={{ alignItems: 'flex-start' }}
+            >
+              <div className="text-2xl">Real Gym</div>
+              <div className="text-sm font-medium opacity-90 mt-1">15 rounds · how lifters actually load</div>
+            </button>
+            <button
               onClick={() => onStart('practice')}
               className="btn-chunky btn-chunky--ghost text-left flex-col py-6"
               style={{ alignItems: 'flex-start' }}
@@ -56,16 +64,13 @@ export function Landing({ onStart, bests }: Props) {
             </button>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3 text-center">
-            {(['quick', 'standard'] as Mode[]).map((m) => (
-              <div key={m} className="chip mx-auto">
+          <div className="mt-6 flex flex-wrap justify-center gap-3 text-center">
+            {(['quick', 'standard', 'realgym'] as Mode[]).map((m) => (
+              <div key={m} className="chip">
                 <span>Best {MODES[m].label}:</span>
                 <span className="font-extrabold text-ink-800">{bests[m] ?? '—'}</span>
               </div>
             ))}
-            <div className="chip mx-auto">
-              <span>🎨 Suika-style</span>
-            </div>
           </div>
         </div>
 

@@ -1,5 +1,24 @@
 import { BARS, plate, type Bar, type Plate, type Unit } from './plates'
 
+// Realistic plate sets used by Real Gym mode. 35 lb plates are intentionally
+// omitted — in strength gyms a 35 is almost never loaded when a 25 + 10 would
+// do, so the canonical loadout for any common total is uniquely determined.
+const REAL_LB_PLATES = [45, 25, 10, 5, 2.5, 1.25] as const
+const REAL_KG_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5, 0.25] as const
+
+// Common gym totals, banded by visual/loading difficulty.
+const LB_TARGETS_BY_TIER: Record<1 | 2 | 3 | 4, number[]> = {
+  1: [95, 115, 135, 155, 185, 205, 225],
+  2: [245, 275, 295, 315, 335, 365, 385],
+  3: [405, 425, 455, 495, 525, 545, 167.5, 192.5, 232.5],
+  4: [585, 605, 635, 675, 705, 322.5, 367.5, 472.5],
+}
+
+const KG_TARGETS_BY_TIER: Record<3 | 4, number[]> = {
+  3: [40, 50, 60, 70, 80, 100, 120],
+  4: [110, 130, 140, 160, 180, 200, 220, 102.5, 142.5],
+}
+
 export type Round = {
   bar: Bar
   perSide: Plate[]
@@ -122,6 +141,54 @@ export function tierForRound(roundIndex: number, totalRounds: number, maxTier: 1
   // Map round 0..n-1 to tiers 1..maxTier, weighted toward higher tiers later.
   const t = Math.min(maxTier, 1 + Math.floor((roundIndex / totalRounds) * maxTier)) as 1 | 2 | 3 | 4
   return t
+}
+
+function greedyLoad(perSide: number, sizes: readonly number[]): number[] | null {
+  const plates: number[] = []
+  let remaining = perSide
+  for (const size of sizes) {
+    while (remaining + 1e-6 >= size) {
+      plates.push(size)
+      remaining -= size
+    }
+  }
+  return Math.abs(remaining) < 1e-6 ? plates : null
+}
+
+function realisticBuild(target: number, unit: Unit): Pick<Round, 'bar' | 'perSide' | 'unit' | 'tier'> | null {
+  const bar = unit === 'lb' ? BARS['lb-45'] : BARS['kg-20']
+  const perSideWeight = (target - bar.weight) / 2
+  if (perSideWeight <= 0) return null
+  const sizes = unit === 'lb' ? REAL_LB_PLATES : REAL_KG_PLATES
+  const weights = greedyLoad(perSideWeight, sizes)
+  if (!weights || weights.length === 0) return null
+  const perSide = weights.map((w) => plate(w, unit))
+  return { bar, perSide, unit, tier: 1 }
+}
+
+export function generateRealisticRound(tier: 1 | 2 | 3 | 4): Round {
+  // For tier 3+, sometimes pick a kg target. Tiers 1-2 are lb-only for warmup.
+  for (let attempt = 0; attempt < 12; attempt++) {
+    let target: number
+    let unit: Unit
+    const useKg = tier >= 3 && Math.random() < (tier === 4 ? 0.55 : 0.35)
+    if (useKg) {
+      const list = KG_TARGETS_BY_TIER[tier as 3 | 4]
+      target = rand(list)
+      unit = 'kg'
+    } else {
+      target = rand(LB_TARGETS_BY_TIER[tier])
+      unit = 'lb'
+    }
+    const built = realisticBuild(target, unit)
+    if (!built) continue
+    const total = totalFor(built.bar, built.perSide)
+    if (Math.abs(total - target) > 0.01) continue
+    const { choices, correctIndex } = buildChoices(total, unit, tier)
+    return { ...built, tier, total, choices, correctIndex }
+  }
+  // Fallback to a plain Tier 1 round.
+  return generateRound(1)
 }
 
 export function generateRound(tier: 1 | 2 | 3 | 4): Round {

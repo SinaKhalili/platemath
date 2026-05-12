@@ -92,7 +92,70 @@ export function plateThud() {
 }
 
 export function correctChime() {
-  envelope([660, 880, 1320], 'triangle', [0.08, 0.08, 0.18], [0.35, 0.35, 0.0001])
+  const c = ensure()
+  if (!c || !masterGain) return
+  const now = c.currentTime
+
+  // Layered major chord stinger (C-E-G-ish) with a fast attack.
+  const chord = [523.25, 659.25, 783.99, 1046.5]
+  chord.forEach((f, i) => {
+    const osc = c.createOscillator()
+    osc.type = i === 3 ? 'sine' : 'triangle'
+    osc.frequency.setValueAtTime(f, now)
+    const g = c.createGain()
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.exponentialRampToValueAtTime(0.22 / chord.length + 0.06, now + 0.005)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.55)
+    osc.connect(g).connect(masterGain)
+    osc.start(now)
+    osc.stop(now + 0.6)
+  })
+
+  // Quick upward swoop on top for that "tada" feeling.
+  const swoop = c.createOscillator()
+  swoop.type = 'triangle'
+  swoop.frequency.setValueAtTime(880, now)
+  swoop.frequency.exponentialRampToValueAtTime(2200, now + 0.18)
+  const sg = c.createGain()
+  sg.gain.setValueAtTime(0.0001, now)
+  sg.gain.exponentialRampToValueAtTime(0.18, now + 0.01)
+  sg.gain.exponentialRampToValueAtTime(0.0001, now + 0.22)
+  swoop.connect(sg).connect(masterGain)
+  swoop.start(now)
+  swoop.stop(now + 0.25)
+
+  // Sub-bass thud that gives it weight, like a barbell hitting a pad.
+  const sub = c.createOscillator()
+  sub.type = 'sine'
+  sub.frequency.setValueAtTime(140, now)
+  sub.frequency.exponentialRampToValueAtTime(55, now + 0.18)
+  const subG = c.createGain()
+  subG.gain.setValueAtTime(0.0001, now)
+  subG.gain.exponentialRampToValueAtTime(0.55, now + 0.005)
+  subG.gain.exponentialRampToValueAtTime(0.0001, now + 0.28)
+  sub.connect(subG).connect(masterGain)
+  sub.start(now)
+  sub.stop(now + 0.3)
+
+  // Short noise burst for the snare-like crack.
+  try {
+    const buffer = c.createBuffer(1, c.sampleRate * 0.08, c.sampleRate)
+    const data = buffer.getChannelData(0)
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (c.sampleRate * 0.025))
+    }
+    const noise = c.createBufferSource()
+    noise.buffer = buffer
+    const ng = c.createGain()
+    ng.gain.value = 0.14
+    const hp = c.createBiquadFilter()
+    hp.type = 'highpass'
+    hp.frequency.value = 1200
+    noise.connect(hp).connect(ng).connect(masterGain)
+    noise.start(now)
+  } catch {
+    /* AudioBuffer not supported, skip */
+  }
 }
 
 export function wrongBuzz() {

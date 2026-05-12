@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { generateRound, tierForRound, type Round } from './rounds'
+import { generateRealisticRound, generateRound, tierForRound, type Round } from './rounds'
 
-export type Mode = 'quick' | 'standard' | 'practice'
+export type Mode = 'quick' | 'standard' | 'practice' | 'realgym'
 
 export type ModeConfig = {
   id: Mode
@@ -9,11 +9,21 @@ export type ModeConfig = {
   rounds: number | 'endless'
   maxTier: 1 | 2 | 3 | 4
   blurb: string
+  /** When true, only generate canonical greedy gym loadouts. */
+  realistic?: boolean
 }
 
 export const MODES: Record<Mode, ModeConfig> = {
   quick: { id: 'quick', label: 'Quick Play', rounds: 10, maxTier: 2, blurb: 'Ten rounds, classic combos.' },
   standard: { id: 'standard', label: 'Standard', rounds: 25, maxTier: 4, blurb: 'Twenty-five rounds. Tiers 1 through 4.' },
+  realgym: {
+    id: 'realgym',
+    label: 'Real Gym',
+    rounds: 15,
+    maxTier: 4,
+    blurb: 'Only how a real lifter would load the bar.',
+    realistic: true,
+  },
   practice: { id: 'practice', label: 'Practice', rounds: 'endless', maxTier: 4, blurb: 'Endless drilling. No score.' },
 }
 
@@ -87,8 +97,10 @@ export function useGame() {
   const [bests, setBests] = useState<Record<string, number>>(() => loadBest())
 
   const start = useCallback((mode: Mode) => {
-    const tier = tierForRound(0, MODES[mode].rounds === 'endless' ? 25 : MODES[mode].rounds, MODES[mode].maxTier)
-    const round = generateRound(tier)
+    const cfg = MODES[mode]
+    const totalRounds = cfg.rounds === 'endless' ? 25 : cfg.rounds
+    const tier = tierForRound(0, totalRounds, cfg.maxTier)
+    const round = cfg.realistic ? generateRealisticRound(tier) : generateRound(tier)
     setState((s) => ({
       ...s,
       mode,
@@ -146,7 +158,7 @@ export function useGame() {
         return { ...s, phase: 'finished' }
       }
       const tier = tierForRound(nextIndex, total, config.maxTier)
-      const round = generateRound(tier)
+      const round = config.realistic ? generateRealisticRound(tier) : generateRound(tier)
       return {
         ...s,
         roundIndex: nextIndex,
