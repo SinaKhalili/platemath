@@ -13,52 +13,73 @@ type Props = {
 
 // Layout constants in SVG user units.
 const VBW = 920
-const VBH = 340
-const CENTER_Y = 180
-const SHAFT_HALF = 80 // center grip extends ±SHAFT_HALF from middle
-const SLEEVE_LEN = 230 // each sleeve is this long
-const SLEEVE_X_INNER = VBW / 2 - SHAFT_HALF // start of left collar
-const SLEEVE_X_OUTER = SLEEVE_X_INNER - SLEEVE_LEN // outer end of left sleeve
-const END_CAP_W = 28
-const SHAFT_HEIGHT = 18
-const SLEEVE_HEIGHT = 34
-const COLLAR_W = 16
-const COLLAR_H = 64
+const VBH = 320
+const CENTER_Y = 175
 
-// Maximum plate diameter in SVG units (the biggest plate visually).
+// Bar geometry — outer to inner on the left half.
+const END_CAP_X = 60
+const END_CAP_LEN = 26
+const END_CAP_HEIGHT = 38
+const SLEEVE_X = END_CAP_X + END_CAP_LEN - 6 // overlap end cap slightly so they read as one piece
+const SLEEVE_HEIGHT = 26
+const BUSHING_W = 20
+const BUSHING_HEIGHT = 48
+const SHAFT_HALF = 95
+const SHAFT_HEIGHT = 14
+
+const SHAFT_LEFT_X = VBW / 2 - SHAFT_HALF
+const SHAFT_RIGHT_X = VBW / 2 + SHAFT_HALF
+const BUSHING_LEFT_X = SHAFT_LEFT_X - BUSHING_W
+const BUSHING_RIGHT_X = SHAFT_RIGHT_X
+const SLEEVE_LEN = BUSHING_LEFT_X - SLEEVE_X
+
+// Plate stack starts at the outer edge of the bushing and moves outward.
+const PLATE_INNER_EDGE_LEFT = BUSHING_LEFT_X
+const PLATE_INNER_EDGE_RIGHT = BUSHING_RIGHT_X + BUSHING_W
+
+// Plate size envelope.
 const MAX_PLATE_HEIGHT = 240
-// Maximum plate thickness for the chunkiest plate.
-const MAX_PLATE_THICKNESS = 46
+const MAX_PLATE_THICKNESS = 44
 const MIN_PLATE_THICKNESS = 14
-const PLATE_GAP = 6
+const PLATE_GAP = 5
+
+// Hub band rendered on top of each plate (the visible "bar through hole").
+const HUB_HEIGHT = 22
+
+// Colors — warm-tinted metallics that complement the cream background.
+const C = {
+  endCap: '#3F3A30',
+  endCapHighlight: '#6F6759',
+  sleeve: '#E2DCC9',
+  sleeveShadow: '#A89F87',
+  sleeveBand: '#BFB7A1',
+  bushing: '#3F3A30',
+  bushingHighlight: '#6F6759',
+  shaft: '#CFC6AE',
+  shaftShadow: '#9B9077',
+  knurl: '#6F6759',
+  hubFill: '#C6BCA0', // slightly darker than sleeve → reads as a shadowed hole
+  hubRim: '#7A7058',
+}
 
 export function Barbell({ bar, perSide, animKey, hop, shake }: Props) {
-  // Plates are pre-sorted largest first. Stack them outward from the collar.
+  // Plates are pre-sorted largest first. Stack them outward from the bushing.
   const plateGeom = perSide.map((p) => ({
     plate: p,
     width: MIN_PLATE_THICKNESS + (MAX_PLATE_THICKNESS - MIN_PLATE_THICKNESS) * p.thickness,
     height: MAX_PLATE_HEIGHT * p.diameter,
   }))
 
-  // Compute x offsets from the inner collar going outward.
-  let runningOffset = COLLAR_W + 4
-  const placed = plateGeom.map((pg, i) => {
-    const x = runningOffset
+  let runningOffset = 0
+  const placed = plateGeom.map((pg) => {
+    const offset = runningOffset
     runningOffset += pg.width + PLATE_GAP
-    return { ...pg, offset: x, index: i }
+    return { ...pg, offset }
   })
 
-  const sleeveColor = '#D7D2C2'
-  const sleeveShadow = '#A7A293'
-  const shaftColor = '#BFB8A5'
-  const shaftShadow = '#8E8775'
-  const collarColor = '#5A5347'
-  const knurlColor = '#8C8676'
-
-  // Knurling dots in the center grip.
-  const knurlRows = 3
-  const knurlCols = 14
-  const knurlGap = (SHAFT_HALF * 2) / (knurlCols + 1)
+  // Knurling pattern across the center grip.
+  const knurlCols = 22
+  const knurlGap = (SHAFT_HALF * 2 - 16) / (knurlCols - 1)
 
   return (
     <svg
@@ -69,100 +90,78 @@ export function Barbell({ bar, perSide, animKey, hop, shake }: Props) {
     >
       <defs>
         <filter id="plate-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="6" stdDeviation="4" floodOpacity="0.18" />
+          <feDropShadow dx="0" dy="5" stdDeviation="3.5" floodOpacity="0.18" />
         </filter>
-        <filter id="bar-shadow" x="-5%" y="-5%" width="110%" height="130%">
-          <feDropShadow dx="0" dy="4" stdDeviation="3" floodOpacity="0.15" />
+        <filter id="bar-shadow" x="-5%" y="-30%" width="110%" height="160%">
+          <feDropShadow dx="0" dy="4" stdDeviation="3" floodOpacity="0.16" />
         </filter>
+        <linearGradient id="sleeve-gloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.55" />
+          <stop offset="35%" stopColor="#FFFFFF" stopOpacity="0.05" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.18" />
+        </linearGradient>
+        <linearGradient id="shaft-gloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.2" />
+        </linearGradient>
+        {perSide
+          .map((p) => p.color)
+          .filter((c, i, arr) => arr.indexOf(c) === i)
+          .map((c) => (
+            <linearGradient key={c} id={`plate-grad-${c.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.22" />
+              <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0.18" />
+            </linearGradient>
+          ))}
       </defs>
 
       <g key={animKey} className="barbell__group">
-        {/* End caps */}
-        <rect
-          x={SLEEVE_X_OUTER - END_CAP_W}
-          y={CENTER_Y - SLEEVE_HEIGHT / 2 - 3}
-          width={END_CAP_W}
-          height={SLEEVE_HEIGHT + 6}
-          rx={6}
-          fill={collarColor}
-          filter="url(#bar-shadow)"
-        />
-        <rect
-          x={VBW - SLEEVE_X_OUTER}
-          y={CENTER_Y - SLEEVE_HEIGHT / 2 - 3}
-          width={END_CAP_W}
-          height={SLEEVE_HEIGHT + 6}
-          rx={6}
-          fill={collarColor}
-          filter="url(#bar-shadow)"
-        />
+        {/* === Bar, drawn before plates so plates can mask it === */}
+        <g filter="url(#bar-shadow)">
+          {/* Left half */}
+          <BarHalf side="left" />
+          {/* Right half (mirrored via flipping coordinates) */}
+          <BarHalf side="right" />
+          {/* Center shaft */}
+          <rect
+            x={SHAFT_LEFT_X}
+            y={CENTER_Y - SHAFT_HEIGHT / 2}
+            width={SHAFT_HALF * 2}
+            height={SHAFT_HEIGHT}
+            rx={SHAFT_HEIGHT / 2}
+            fill={C.shaft}
+          />
+          <rect
+            x={SHAFT_LEFT_X}
+            y={CENTER_Y - SHAFT_HEIGHT / 2}
+            width={SHAFT_HALF * 2}
+            height={SHAFT_HEIGHT}
+            rx={SHAFT_HEIGHT / 2}
+            fill="url(#shaft-gloss)"
+          />
+          {/* Knurl marks — vertical hashes for a cleaner read than dots */}
+          {Array.from({ length: knurlCols }).map((_, i) => {
+            const x = SHAFT_LEFT_X + 8 + knurlGap * i
+            return (
+              <line
+                key={`k-${i}`}
+                x1={x}
+                y1={CENTER_Y - SHAFT_HEIGHT / 2 + 2}
+                x2={x}
+                y2={CENTER_Y + SHAFT_HEIGHT / 2 - 2}
+                stroke={C.knurl}
+                strokeWidth={1.2}
+                opacity={0.55}
+              />
+            )
+          })}
+        </g>
 
-        {/* Left sleeve */}
-        <rect
-          x={SLEEVE_X_OUTER}
-          y={CENTER_Y - SLEEVE_HEIGHT / 2}
-          width={SLEEVE_LEN}
-          height={SLEEVE_HEIGHT}
-          rx={SLEEVE_HEIGHT / 2}
-          fill={sleeveColor}
-          stroke={sleeveShadow}
-          strokeWidth={1.5}
-        />
-        {/* Right sleeve */}
-        <rect
-          x={VBW - SLEEVE_X_INNER}
-          y={CENTER_Y - SLEEVE_HEIGHT / 2}
-          width={SLEEVE_LEN}
-          height={SLEEVE_HEIGHT}
-          rx={SLEEVE_HEIGHT / 2}
-          fill={sleeveColor}
-          stroke={sleeveShadow}
-          strokeWidth={1.5}
-        />
-
-        {/* Inner collars */}
-        <rect
-          x={SLEEVE_X_INNER - COLLAR_W}
-          y={CENTER_Y - COLLAR_H / 2}
-          width={COLLAR_W}
-          height={COLLAR_H}
-          rx={4}
-          fill={collarColor}
-        />
-        <rect
-          x={VBW - SLEEVE_X_INNER}
-          y={CENTER_Y - COLLAR_H / 2}
-          width={COLLAR_W}
-          height={COLLAR_H}
-          rx={4}
-          fill={collarColor}
-        />
-
-        {/* Shaft (center grip) */}
-        <rect
-          x={SLEEVE_X_INNER}
-          y={CENTER_Y - SHAFT_HEIGHT / 2}
-          width={SHAFT_HALF * 2}
-          height={SHAFT_HEIGHT}
-          rx={SHAFT_HEIGHT / 2}
-          fill={shaftColor}
-          stroke={shaftShadow}
-          strokeWidth={1.5}
-        />
-
-        {/* Knurling dots */}
-        {Array.from({ length: knurlRows }).map((_, r) =>
-          Array.from({ length: knurlCols }).map((_, c) => {
-            const cx = SLEEVE_X_INNER + knurlGap * (c + 1)
-            const cy = CENTER_Y - SHAFT_HEIGHT / 2 + 4 + r * 3
-            return <circle key={`k-${r}-${c}`} cx={cx} cy={cy} r={1.1} fill={knurlColor} />
-          }),
-        )}
-
-        {/* Plates — left side and right side mirrored */}
+        {/* === Plates === */}
         {placed.map((pg, i) => {
-          const leftX = SLEEVE_X_INNER - COLLAR_W - 4 - pg.offset - pg.width
-          const rightX = VBW - SLEEVE_X_INNER + COLLAR_W + 4 + pg.offset
+          const leftX = PLATE_INNER_EDGE_LEFT - pg.offset - pg.width
+          const rightX = PLATE_INNER_EDGE_RIGHT + pg.offset
           const delay = `${i * 60}ms`
           return (
             <g key={`p-${animKey}-${i}`}>
@@ -187,10 +186,14 @@ export function Barbell({ bar, perSide, animKey, hop, shake }: Props) {
           )
         })}
 
-        {/* Bar label, faint, under the bar */}
+        {/* === Bushings drawn on top of plates so the inner stop is always visible === */}
+        <Bushing x={BUSHING_LEFT_X} />
+        <Bushing x={BUSHING_RIGHT_X} />
+
+        {/* Bar label below */}
         <text
           x={VBW / 2}
-          y={CENTER_Y + 80}
+          y={CENTER_Y + 92}
           textAnchor="middle"
           className="barbell__bar-label"
           fill="#7a705b"
@@ -199,6 +202,88 @@ export function Barbell({ bar, perSide, animKey, hop, shake }: Props) {
         </text>
       </g>
     </svg>
+  )
+}
+
+function BarHalf({ side }: { side: 'left' | 'right' }) {
+  const isLeft = side === 'left'
+  const endCapX = isLeft ? END_CAP_X : VBW - END_CAP_X - END_CAP_LEN
+  const sleeveX = isLeft ? SLEEVE_X : VBW - SLEEVE_X - SLEEVE_LEN
+  return (
+    <g>
+      {/* End cap — chunky rounded knob */}
+      <rect
+        x={endCapX}
+        y={CENTER_Y - END_CAP_HEIGHT / 2}
+        width={END_CAP_LEN}
+        height={END_CAP_HEIGHT}
+        rx={9}
+        fill={C.endCap}
+      />
+      {/* End cap highlight */}
+      <rect
+        x={endCapX + 3}
+        y={CENTER_Y - END_CAP_HEIGHT / 2 + 3}
+        width={END_CAP_LEN - 6}
+        height={5}
+        rx={3}
+        fill={C.endCapHighlight}
+        opacity={0.5}
+      />
+      {/* Sleeve */}
+      <rect
+        x={sleeveX}
+        y={CENTER_Y - SLEEVE_HEIGHT / 2}
+        width={SLEEVE_LEN}
+        height={SLEEVE_HEIGHT}
+        rx={3}
+        fill={C.sleeve}
+      />
+      {/* Sleeve gloss */}
+      <rect
+        x={sleeveX}
+        y={CENTER_Y - SLEEVE_HEIGHT / 2}
+        width={SLEEVE_LEN}
+        height={SLEEVE_HEIGHT}
+        rx={3}
+        fill="url(#sleeve-gloss)"
+      />
+      {/* Two thin sleeve bands suggesting bushing rotation */}
+      <line
+        x1={isLeft ? sleeveX + 6 : sleeveX + SLEEVE_LEN - 6}
+        y1={CENTER_Y - SLEEVE_HEIGHT / 2 + 1}
+        x2={isLeft ? sleeveX + 6 : sleeveX + SLEEVE_LEN - 6}
+        y2={CENTER_Y + SLEEVE_HEIGHT / 2 - 1}
+        stroke={C.sleeveBand}
+        strokeWidth={1.4}
+        opacity={0.7}
+      />
+    </g>
+  )
+}
+
+function Bushing({ x }: { x: number }) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={CENTER_Y - BUSHING_HEIGHT / 2}
+        width={BUSHING_W}
+        height={BUSHING_HEIGHT}
+        rx={5}
+        fill={C.bushing}
+      />
+      {/* Highlight on top edge */}
+      <rect
+        x={x + 3}
+        y={CENTER_Y - BUSHING_HEIGHT / 2 + 3}
+        width={BUSHING_W - 6}
+        height={4}
+        rx={2}
+        fill={C.bushingHighlight}
+        opacity={0.55}
+      />
+    </g>
   )
 }
 
@@ -213,71 +298,75 @@ type PlateShapeProps = {
 }
 
 function PlateShape({ x, y, w, h, plate, delay, mirrored }: PlateShapeProps) {
-  const radius = Math.min(w * 0.45, 14)
-  // Label sized to fit comfortably inside the plate edge (the narrow dimension).
-  const fontSize = Math.min(w * 0.7, h * 0.11)
+  const radius = Math.min(w * 0.42, 12)
+  const fontSize = Math.min(w * 0.72, h * 0.1)
   const cx = x + w / 2
-  const cy = y + h / 2
-  const isLight = plate.color === '#F2EEDF' || plate.color === '#C8C5BB' || plate.color === '#E8C642'
+  const isLight =
+    plate.color === '#F2EEDF' || plate.color === '#C8C5BB' || plate.color === '#E8C642' || plate.color === '#F5C84B'
   const labelFill = isLight ? '#2A2A2E' : 'white'
+  const gradId = `plate-grad-${plate.color.slice(1)}`
   return (
     <g
       className={`plate plate--${mirrored ? 'r' : 'l'}`}
       style={{ animationDelay: delay }}
       filter="url(#plate-shadow)"
     >
-      {/* Main plate rectangle */}
+      {/* Plate body */}
+      <rect x={x} y={y} width={w} height={h} rx={radius} fill={plate.color} />
+      {/* Subtle vertical gradient for depth */}
+      <rect x={x} y={y} width={w} height={h} rx={radius} fill={`url(#${gradId})`} />
+      {/* Outer rim (the painted edge ring on a bumper plate) */}
       <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx={radius}
-        fill={plate.color}
-        stroke={plate.ring}
-        strokeWidth={2.5}
-      />
-      {/* Inner highlight ring (slight inset) */}
-      <rect
-        x={x + 2}
-        y={y + 2}
-        width={w - 4}
-        height={h - 4}
-        rx={radius - 2}
+        x={x + 0.75}
+        y={y + 0.75}
+        width={w - 1.5}
+        height={h - 1.5}
+        rx={radius - 0.75}
         fill="none"
-        stroke="white"
-        strokeOpacity={0.22}
-        strokeWidth={1.5}
+        stroke={plate.ring}
+        strokeWidth={2}
       />
-      {/* Top glossy highlight */}
+      {/* Top glossy highlight, slightly curved feel */}
+      <ellipse cx={cx} cy={y + Math.max(7, h * 0.05)} rx={w * 0.32} ry={Math.max(2, h * 0.018)} fill="white" opacity={0.55} />
+
+      {/* Hub band — visible "bar through the hole" */}
       <rect
-        x={x + 3}
-        y={y + 4}
-        width={w - 6}
-        height={Math.max(2, h * 0.04)}
-        rx={radius * 0.6}
-        fill="white"
-        opacity={0.45}
+        x={x - 0.5}
+        y={CENTER_Y - HUB_HEIGHT / 2}
+        width={w + 1}
+        height={HUB_HEIGHT}
+        fill={C.hubFill}
       />
-      {/* Center hub (sleeve hole) */}
-      <rect
-        x={x - 1}
-        y={cy - SLEEVE_HEIGHT / 2 + 2}
-        width={w + 2}
-        height={SLEEVE_HEIGHT - 4}
-        fill={plate.ring}
-        opacity={0.55}
+      {/* Thin shadow rims on the inner edge of the hole */}
+      <line
+        x1={x - 0.5}
+        y1={CENTER_Y - HUB_HEIGHT / 2 + 0.5}
+        x2={x + w + 0.5}
+        y2={CENTER_Y - HUB_HEIGHT / 2 + 0.5}
+        stroke={C.hubRim}
+        strokeWidth={1.2}
+        opacity={0.6}
       />
-      {/* Label, rotated vertically so it reads top-to-bottom like a stacked plate. */}
-      {h > 80 && fontSize > 6 && (
+      <line
+        x1={x - 0.5}
+        y1={CENTER_Y + HUB_HEIGHT / 2 - 0.5}
+        x2={x + w + 0.5}
+        y2={CENTER_Y + HUB_HEIGHT / 2 - 0.5}
+        stroke={C.hubRim}
+        strokeWidth={1}
+        opacity={0.4}
+      />
+
+      {/* Label, rotated vertically to read top-to-bottom like a stacked plate. */}
+      {h > 70 && fontSize > 6 && (
         <text
           x={cx}
-          y={y + h * 0.32}
+          y={y + h * 0.27}
           textAnchor="middle"
           fontSize={fontSize}
           fontWeight={800}
           fill={labelFill}
-          transform={`rotate(90 ${cx} ${y + h * 0.32})`}
+          transform={`rotate(90 ${cx} ${y + h * 0.27})`}
           style={{ letterSpacing: '1px', fontFamily: 'Fredoka, Nunito, sans-serif' }}
         >
           {plate.label}
