@@ -43,23 +43,16 @@ const MAX_PLATE_THICKNESS = 44
 const MIN_PLATE_THICKNESS = 14
 const PLATE_GAP = 5
 
-// Hub band rendered on top of each plate (the visible "bar through hole").
-const HUB_HEIGHT = 22
-
 // Colors — warm-tinted metallics that complement the cream background.
 const C = {
   endCap: '#3F3A30',
   endCapHighlight: '#6F6759',
   sleeve: '#E2DCC9',
-  sleeveShadow: '#A89F87',
   sleeveBand: '#BFB7A1',
   bushing: '#3F3A30',
   bushingHighlight: '#6F6759',
   shaft: '#CFC6AE',
-  shaftShadow: '#9B9077',
   knurl: '#6F6759',
-  hubFill: '#C6BCA0', // slightly darker than sleeve → reads as a shadowed hole
-  hubRim: '#7A7058',
 }
 
 export function Barbell({ bar, perSide, animKey, hop, shake }: Props) {
@@ -328,34 +321,6 @@ function PlateShape({ x, y, w, h, plate, delay, mirrored }: PlateShapeProps) {
       />
       {/* Top glossy highlight, slightly curved feel */}
       <ellipse cx={cx} cy={y + Math.max(7, h * 0.05)} rx={w * 0.32} ry={Math.max(2, h * 0.018)} fill="white" opacity={0.55} />
-
-      {/* Hub band — visible "bar through the hole" */}
-      <rect
-        x={x - 0.5}
-        y={CENTER_Y - HUB_HEIGHT / 2}
-        width={w + 1}
-        height={HUB_HEIGHT}
-        fill={C.hubFill}
-      />
-      {/* Thin shadow rims on the inner edge of the hole */}
-      <line
-        x1={x - 0.5}
-        y1={CENTER_Y - HUB_HEIGHT / 2 + 0.5}
-        x2={x + w + 0.5}
-        y2={CENTER_Y - HUB_HEIGHT / 2 + 0.5}
-        stroke={C.hubRim}
-        strokeWidth={1.2}
-        opacity={0.6}
-      />
-      <line
-        x1={x - 0.5}
-        y1={CENTER_Y + HUB_HEIGHT / 2 - 0.5}
-        x2={x + w + 0.5}
-        y2={CENTER_Y + HUB_HEIGHT / 2 - 0.5}
-        stroke={C.hubRim}
-        strokeWidth={1}
-        opacity={0.4}
-      />
 
       {/* Label, rotated vertically to read top-to-bottom like a stacked plate. */}
       {h > 70 && fontSize > 6 && (
