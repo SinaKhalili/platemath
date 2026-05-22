@@ -10,16 +10,18 @@ import { correctChime, plateCascade, tinyTap, wrongBuzz } from '../game/sound'
 type Props = {
   state: SessionState
   multiplier: number
+  monochrome: boolean
   onAnswer: (value: number) => void
   onNext: () => void
   onQuit: () => void
   onToggleInput: (mode: 'choice' | 'numpad') => void
 }
 
-export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onToggleInput }: Props) {
+export function RoundScreen({ state, multiplier, monochrome, onAnswer, onNext, onQuit, onToggleInput }: Props) {
   const round = state.round!
   const config = MODES[state.mode]
   const total = config.rounds === 'endless' ? '∞' : config.rounds
+  const isTimed = config.scoring === 'tally'
   const [picked, setPicked] = useState<number | null>(null)
 
   // Reset multiple-choice pick state when the round itself changes.
@@ -61,10 +63,14 @@ export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onTog
         <button onClick={onQuit} className="chip hover:scale-105 transition-transform" type="button">
           ← Quit
         </button>
-        <div className="chip">
-          Round <span className="font-extrabold ml-1">{state.roundIndex + 1}</span>
-          <span className="opacity-60">/ {total}</span>
-        </div>
+        {isTimed ? (
+          <TimerDisplay seconds={state.timeRemaining ?? 0} />
+        ) : (
+          <div className="chip">
+            Round <span className="font-extrabold ml-1">{state.roundIndex + 1}</span>
+            <span className="opacity-60">/ {total}</span>
+          </div>
+        )}
         <div className="chip">
           <span>★</span>
           <span className="font-extrabold">{state.score}</span>
@@ -92,6 +98,7 @@ export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onTog
             animKey={`${state.roundIndex}-${state.phase}`}
             hop={showingResult && wasCorrect}
             shake={showingResult && !wasCorrect}
+            monochrome={monochrome}
           />
           {showingResult && wasCorrect && (
             <>
@@ -106,12 +113,17 @@ export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onTog
               </div>
             </>
           )}
+          {showingResult && !wasCorrect && isTimed && (
+            <div className="score-pop score-pop--neg">−1</div>
+          )}
         </div>
       </div>
 
       {/* Result overlay */}
-      {showingResult && !wasCorrect ? (
+      {showingResult && !wasCorrect && !isTimed ? (
         <WrongCard round={round} given={state.lastAnswer?.given ?? 0} onContinue={onNext} />
+      ) : showingResult && !wasCorrect && isTimed ? (
+        <TimedWrongStrip round={round} />
       ) : (
         <div className="mt-2">
           <div className="flex items-center justify-center gap-2 mb-3">
@@ -144,6 +156,26 @@ export function RoundScreen({ state, multiplier, onAnswer, onNext, onQuit, onTog
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+function TimerDisplay({ seconds }: { seconds: number }) {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  const urgent = seconds <= 10
+  return (
+    <div className={`timer-display ${urgent ? 'timer-display--urgent' : ''}`}>
+      {m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`}
+    </div>
+  )
+}
+
+function TimedWrongStrip({ round }: { round: Round }) {
+  return (
+    <div className="card p-4 mt-2 mx-auto max-w-md w-full text-center">
+      <div className="text-sm text-rose-400 font-bold mb-1">Not quite</div>
+      <div className="fancy-headline text-2xl text-mint-500">{formatTotal(round.total, round.unit)}</div>
     </div>
   )
 }

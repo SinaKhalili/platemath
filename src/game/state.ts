@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { generateRealisticRound, generateRound, tierForRound, type Round } from './rounds'
 
-export type Mode = 'quick' | 'standard' | 'practice' | 'realgym'
+export type Mode = 'sprint' | 'quick' | 'standard' | 'practice'
+
+export type Scoring = 'points' | 'tally'
 
 export type ModeConfig = {
   id: Mode
@@ -9,25 +11,34 @@ export type ModeConfig = {
   rounds: number | 'endless'
   maxTier: 1 | 2 | 3 | 4
   blurb: string
-  /** When true, only generate canonical greedy gym loadouts. */
-  realistic?: boolean
+  scoring: Scoring
+  /** Seconds. Only set for timed modes. */
+  timeLimit?: number
 }
 
 export const MODES: Record<Mode, ModeConfig> = {
-  quick: { id: 'quick', label: 'Quick Play', rounds: 10, maxTier: 2, blurb: 'Ten rounds, classic combos.' },
-  standard: { id: 'standard', label: 'Standard', rounds: 25, maxTier: 4, blurb: 'Twenty-five rounds. Tiers 1 through 4.' },
-  realgym: {
-    id: 'realgym',
-    label: 'Real Gym',
-    rounds: 15,
+  sprint: {
+    id: 'sprint',
+    label: 'Sprint',
+    rounds: 'endless',
     maxTier: 4,
-    blurb: 'Only how a real lifter would load the bar.',
-    realistic: true,
+    blurb: 'As many as you can in 100 seconds.',
+    scoring: 'tally',
+    timeLimit: 100,
   },
-  practice: { id: 'practice', label: 'Practice', rounds: 'endless', maxTier: 4, blurb: 'Endless drilling. No score.' },
+  quick: { id: 'quick', label: 'Quick Play', rounds: 10, maxTier: 2, blurb: 'Ten rounds, classic combos.', scoring: 'points' },
+  standard: { id: 'standard', label: 'Standard', rounds: 25, maxTier: 4, blurb: 'Twenty-five rounds. Tiers 1 through 4.', scoring: 'points' },
+  practice: { id: 'practice', label: 'Practice', rounds: 'endless', maxTier: 4, blurb: 'Endless drilling. No score.', scoring: 'points' },
 }
 
 export type Phase = 'landing' | 'playing' | 'reveal' | 'finished'
+
+export type Settings = {
+  realgym: boolean
+  monochrome: boolean
+}
+
+const DEFAULT_SETTINGS: Settings = { realgym: false, monochrome: false }
 
 export type Answer = {
   round: Round
@@ -49,6 +60,8 @@ export type SessionState = {
   history: Answer[]
   roundStartedAt: number
   lastAnswer: Answer | null
+  /** Seconds remaining for timed modes; null otherwise. */
+  timeRemaining: number | null
 }
 
 function loadBest(): Record<string, number> {
@@ -70,6 +83,26 @@ function saveBest(best: Record<string, number>) {
   }
 }
 
+function loadSettings(): Settings {
+  if (typeof window === 'undefined') return DEFAULT_SETTINGS
+  try {
+    const raw = localStorage.getItem('platemath:settings')
+    if (!raw) return DEFAULT_SETTINGS
+    return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) }
+  } catch {
+    return DEFAULT_SETTINGS
+  }
+}
+
+function saveSettings(s: Settings) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem('platemath:settings', JSON.stringify(s))
+  } catch {
+    /* ignore */
+  }
+}
+
 function streakMultiplier(streak: number): number {
   if (streak < 3) return 1
   const m = 1 + (streak - 2) * 0.25
@@ -80,7 +113,17 @@ function basePoints(tier: 1 | 2 | 3 | 4): number {
   return [100, 150, 220, 320][tier - 1]
 }
 
+function bestKey(mode: Mode, settings: Settings): string {
+  // Best scores are tracked separately when Real Gym is on, since the difficulty differs.
+  // Monochrome doesn't affect difficulty so it's not part of the key.
+  return settings.realgym ? `${mode}:realgym` : mode
+}
+
 export function useGame() {
+  const [settings, setSettingsState] = useState<Settings>(() => loadSettings())
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
+
   const [state, setState] = useState<SessionState>(() => ({
     mode: 'quick',
     roundIndex: 0,
@@ -93,14 +136,28 @@ export function useGame() {
     history: [],
     roundStartedAt: 0,
     lastAnswer: null,
+    timeRemaining: null,
   }))
   const [bests, setBests] = useState<Record<string, number>>(() => loadBest())
 
-  const start = useCallback((mode: Mode) => {
+  const setSettings = useCallback((partial: Partial<Settings>) => {
+    setSettingsState((s) => {
+      const merged = { ...s, ...partial }
+      saveSettings(merged)
+      return merged
+    })
+  }, [])
+
+  function buildRound(mode: Mode, roundIndex: number) {
     const cfg = MODES[mode]
     const totalRounds = cfg.rounds === 'endless' ? 25 : cfg.rounds
-    const tier = tierForRound(0, totalRounds, cfg.maxTier)
-    const round = cfg.realistic ? generateRealisticRound(tier) : generateRound(tier)
+    const tier = tierForRound(roundIndex, totalRounds, cfg.maxTier)
+    return settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
+  }
+
+  const start = useCallback((mode: Mode) => {
+    const cfg = MODES[mode]
+    const round = buildRound(mode, 0)
     setState((s) => ({
       ...s,
       mode,
@@ -113,26 +170,53 @@ export function useGame() {
       history: [],
       roundStartedAt: Date.now(),
       lastAnswer: null,
+      timeRemaining: cfg.timeLimit ?? null,
     }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const setInputMode = useCallback((m: 'choice' | 'numpad') => {
     setState((s) => ({ ...s, inputMode: m }))
   }, [])
 
+  const finalize = useCallback(
+    (s: SessionState): SessionState => {
+      const cfg = MODES[s.mode]
+      if (cfg.scoring === 'points' && s.mode === 'practice') return { ...s, phase: 'finished' }
+      const key = bestKey(s.mode, settingsRef.current)
+      const prev = bests[key] ?? 0
+      if (s.score > prev) {
+        const updated = { ...bests, [key]: s.score }
+        saveBest(updated)
+        setBests(updated)
+      }
+      return { ...s, phase: 'finished' }
+    },
+    [bests],
+  )
+
   const answer = useCallback((value: number) => {
     setState((s) => {
       if (!s.round || s.phase !== 'playing') return s
+      const cfg = MODES[s.mode]
       const correct = Math.abs(value - s.round.total) < 0.001
       const elapsedMs = Date.now() - s.roundStartedAt
       const nextStreak = correct ? s.streak + 1 : 0
       const mult = streakMultiplier(nextStreak)
-      const earned = correct ? Math.round(basePoints(s.round.tier) * mult) : 0
+      let earned: number
+      let nextScore: number
+      if (cfg.scoring === 'tally') {
+        earned = correct ? 1 : -1
+        nextScore = Math.max(0, s.score + earned)
+      } else {
+        earned = correct ? Math.round(basePoints(s.round.tier) * mult) : 0
+        nextScore = s.score + earned
+      }
       const entry: Answer = { round: s.round, given: value, correct, elapsedMs, scoreEarned: earned }
       return {
         ...s,
         phase: 'reveal',
-        score: s.score + earned,
+        score: nextScore,
         streak: nextStreak,
         bestStreak: Math.max(s.bestStreak, nextStreak),
         history: [...s.history, entry],
@@ -145,20 +229,9 @@ export function useGame() {
     setState((s) => {
       const config = MODES[s.mode]
       const nextIndex = s.roundIndex + 1
-      const total = config.rounds === 'endless' ? 25 : config.rounds
       const sessionOver = config.rounds !== 'endless' && nextIndex >= config.rounds
-      if (sessionOver) {
-        const key = `${s.mode}`
-        const prev = bests[key] ?? 0
-        if (s.score > prev) {
-          const updated = { ...bests, [key]: s.score }
-          saveBest(updated)
-          setBests(updated)
-        }
-        return { ...s, phase: 'finished' }
-      }
-      const tier = tierForRound(nextIndex, total, config.maxTier)
-      const round = config.realistic ? generateRealisticRound(tier) : generateRound(tier)
+      if (sessionOver) return finalize(s)
+      const round = buildRound(s.mode, nextIndex)
       return {
         ...s,
         roundIndex: nextIndex,
@@ -168,19 +241,48 @@ export function useGame() {
         lastAnswer: null,
       }
     })
-  }, [bests])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finalize])
 
   const toLanding = useCallback(() => {
     setState((s) => ({ ...s, phase: 'landing' }))
   }, [])
 
-  // Auto-advance after correct answers; wrong answers wait for player.
+  // Auto-advance after correct; for timed modes also auto-advance after wrong (shorter pause).
   useEffect(() => {
-    if (state.phase === 'reveal' && state.lastAnswer?.correct) {
-      const id = setTimeout(() => next(), 850)
+    if (state.phase !== 'reveal' || !state.lastAnswer) return
+    const cfg = MODES[state.mode]
+    const correct = state.lastAnswer.correct
+    if (correct) {
+      const id = setTimeout(() => next(), cfg.scoring === 'tally' ? 500 : 850)
       return () => clearTimeout(id)
     }
-  }, [state.phase, state.lastAnswer, next])
+    if (cfg.scoring === 'tally') {
+      // Wrong in Sprint mode: show the answer briefly then advance.
+      const id = setTimeout(() => next(), 1300)
+      return () => clearTimeout(id)
+    }
+  }, [state.phase, state.lastAnswer, state.mode, next])
+
+  // Countdown timer for timed modes.
+  useEffect(() => {
+    const cfg = MODES[state.mode]
+    if (!cfg.timeLimit) return
+    if (state.phase !== 'playing' && state.phase !== 'reveal') return
+    if (state.timeRemaining === null || state.timeRemaining <= 0) return
+    const id = setInterval(() => {
+      setState((s) => {
+        if (s.timeRemaining === null) return s
+        const t = s.timeRemaining - 1
+        if (t <= 0) {
+          // Time's up — go to post-session, saving best.
+          return finalize({ ...s, timeRemaining: 0 })
+        }
+        return { ...s, timeRemaining: t }
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [state.mode, state.phase, state.timeRemaining, finalize])
 
   const accuracy = useMemo(() => {
     if (state.history.length === 0) return 0
@@ -193,9 +295,15 @@ export function useGame() {
     return correct.reduce((s, h) => s + h.elapsedMs, 0) / correct.length
   }, [state.history])
 
+  const currentBestKey = bestKey(state.mode, settings)
+
   return {
     state,
     bests,
+    settings,
+    setSettings,
+    bestKey,
+    currentBestKey,
     start,
     answer,
     next,

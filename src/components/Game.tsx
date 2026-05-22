@@ -5,14 +5,22 @@ import { RoundScreen } from './RoundScreen'
 
 export function Game() {
   const game = useGame()
-  const { state } = game
+  const { state, settings } = game
 
   if (state.phase === 'landing' || !state.round) {
-    return <Landing onStart={game.start} bests={game.bests} />
+    return (
+      <Landing
+        onStart={game.start}
+        bests={game.bests}
+        settings={settings}
+        setSettings={game.setSettings}
+        bestKeyFor={game.bestKey}
+      />
+    )
   }
 
   if (state.phase === 'finished') {
-    const isNewBest = (game.bests[state.mode] ?? 0) <= state.score && state.score > 0
+    const isNewBest = (game.bests[game.currentBestKey] ?? 0) <= state.score && state.score > 0
     return (
       <PostSession
         state={state}
@@ -30,6 +38,7 @@ export function Game() {
     <RoundScreen
       state={state}
       multiplier={game.multiplier}
+      monochrome={settings.monochrome}
       onAnswer={game.answer}
       onNext={game.next}
       onQuit={game.toLanding}

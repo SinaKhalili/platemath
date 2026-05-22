@@ -1,14 +1,25 @@
-import { MODES, type Mode } from '../game/state'
+import { MODES, type Mode, type Settings } from '../game/state'
 import { Barbell } from './Barbell'
 import { BARS, plate } from '../game/plates'
 
 type Props = {
   onStart: (mode: Mode) => void
   bests: Record<string, number>
+  settings: Settings
+  setSettings: (partial: Partial<Settings>) => void
+  bestKeyFor: (mode: Mode, settings: Settings) => string
 }
 
-export function Landing({ onStart, bests }: Props) {
-  // A decorative loaded bar for the hero, totaling 225 lb.
+const MODE_ORDER: Mode[] = ['sprint', 'quick', 'standard', 'practice']
+
+const MODE_STYLES: Record<Mode, string> = {
+  sprint: 'btn-chunky btn-chunky--rose',
+  quick: 'btn-chunky',
+  standard: 'btn-chunky btn-chunky--mint',
+  practice: 'btn-chunky btn-chunky--ghost',
+}
+
+export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: Props) {
   const heroPlates = [plate(45, 'lb'), plate(25, 'lb')]
 
   return (
@@ -25,52 +36,50 @@ export function Landing({ onStart, bests }: Props) {
         </p>
 
         <div className="mt-8 mb-4 select-none pointer-events-none">
-          <Barbell bar={BARS['lb-45']} perSide={heroPlates} animKey="hero" />
+          <Barbell bar={BARS['lb-45']} perSide={heroPlates} animKey="hero" monochrome={settings.monochrome} />
         </div>
 
         <div className="card p-6 md:p-8 mt-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <button
-              onClick={() => onStart('quick')}
-              className="btn-chunky text-left flex-col items-start py-6"
-              style={{ alignItems: 'flex-start' }}
-            >
-              <div className="text-2xl">Quick Play</div>
-              <div className="text-sm font-medium opacity-90 mt-1">10 rounds · tiers 1–2</div>
-            </button>
-            <button
-              onClick={() => onStart('standard')}
-              className="btn-chunky btn-chunky--mint text-left flex-col py-6"
-              style={{ alignItems: 'flex-start' }}
-            >
-              <div className="text-2xl">Standard</div>
-              <div className="text-sm font-medium opacity-90 mt-1">25 rounds · tiers 1–4</div>
-            </button>
-            <button
-              onClick={() => onStart('realgym')}
-              className="btn-chunky btn-chunky--rose text-left flex-col py-6"
-              style={{ alignItems: 'flex-start' }}
-            >
-              <div className="text-2xl">Real Gym</div>
-              <div className="text-sm font-medium opacity-90 mt-1">15 rounds · how lifters actually load</div>
-            </button>
-            <button
-              onClick={() => onStart('practice')}
-              className="btn-chunky btn-chunky--ghost text-left flex-col py-6"
-              style={{ alignItems: 'flex-start' }}
-            >
-              <div className="text-2xl">Practice</div>
-              <div className="text-sm font-medium opacity-90 mt-1">Endless · no pressure</div>
-            </button>
+            {MODE_ORDER.map((m) => (
+              <button
+                key={m}
+                onClick={() => onStart(m)}
+                className={`${MODE_STYLES[m]} text-left flex-col py-6`}
+                style={{ alignItems: 'flex-start' }}
+                type="button"
+              >
+                <div className="text-2xl">{MODES[m].label}</div>
+                <div className="text-sm font-medium opacity-90 mt-1">{MODES[m].blurb}</div>
+              </button>
+            ))}
           </div>
 
-          <div className="mt-6 flex flex-wrap justify-center gap-3 text-center">
-            {(['quick', 'standard', 'realgym'] as Mode[]).map((m) => (
-              <div key={m} className="chip">
-                <span>Best {MODES[m].label}:</span>
-                <span className="font-extrabold text-ink-800">{bests[m] ?? '—'}</span>
-              </div>
-            ))}
+          <div className="mt-6 grid sm:grid-cols-2 gap-3">
+            <Toggle
+              label="Real-gym loadouts"
+              hint="Only how a real lifter would load the bar"
+              checked={settings.realgym}
+              onChange={(v) => setSettings({ realgym: v })}
+            />
+            <Toggle
+              label="Colored plates"
+              hint="Off = uniform gray, no Olympic colors"
+              checked={!settings.monochrome}
+              onChange={(v) => setSettings({ monochrome: !v })}
+            />
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-2 text-center">
+            {(['sprint', 'quick', 'standard'] as Mode[]).map((m) => {
+              const score = bests[bestKeyFor(m, settings)] ?? null
+              return (
+                <div key={m} className="chip">
+                  <span>Best {MODES[m].label}{settings.realgym ? ' (RG)' : ''}:</span>
+                  <span className="font-extrabold text-ink-800">{score ?? '—'}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
 
@@ -79,5 +88,31 @@ export function Landing({ onStart, bests }: Props) {
         </p>
       </div>
     </div>
+  )
+}
+
+type ToggleProps = {
+  label: string
+  hint?: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}
+
+function Toggle({ label, hint, checked, onChange }: ToggleProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`toggle ${checked ? 'toggle--on' : ''}`}
+      aria-pressed={checked}
+    >
+      <div className="toggle__text">
+        <div className="toggle__label">{label}</div>
+        {hint ? <div className="toggle__hint">{hint}</div> : null}
+      </div>
+      <div className="toggle__switch">
+        <div className="toggle__knob" />
+      </div>
+    </button>
   )
 }

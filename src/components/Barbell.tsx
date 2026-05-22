@@ -9,6 +9,13 @@ type Props = {
   hop?: boolean
   /** When set, plays a sad wobble. */
   shake?: boolean
+  /** Render every plate in the same gray (no Olympic colors). */
+  monochrome?: boolean
+}
+
+const MONO_PALETTE = {
+  color: '#CFCAB8',
+  ring: '#6F6957',
 }
 
 // Layout constants in SVG user units.
@@ -55,9 +62,12 @@ const C = {
   knurl: '#6F6759',
 }
 
-export function Barbell({ bar, perSide, animKey, hop, shake }: Props) {
+export function Barbell({ bar, perSide, animKey, hop, shake, monochrome }: Props) {
   // Plates are pre-sorted largest first. Stack them outward from the bushing.
-  const plateGeom = perSide.map((p) => ({
+  const renderPlates: Plate[] = monochrome
+    ? perSide.map((p) => ({ ...p, color: MONO_PALETTE.color, ring: MONO_PALETTE.ring }))
+    : perSide
+  const plateGeom = renderPlates.map((p) => ({
     plate: p,
     width: MIN_PLATE_THICKNESS + (MAX_PLATE_THICKNESS - MIN_PLATE_THICKNESS) * p.thickness,
     height: MAX_PLATE_HEIGHT * p.diameter,
@@ -97,7 +107,7 @@ export function Barbell({ bar, perSide, animKey, hop, shake }: Props) {
           <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#000000" stopOpacity="0.2" />
         </linearGradient>
-        {perSide
+        {renderPlates
           .map((p) => p.color)
           .filter((c, i, arr) => arr.indexOf(c) === i)
           .map((c) => (
@@ -295,7 +305,11 @@ function PlateShape({ x, y, w, h, plate, delay, mirrored }: PlateShapeProps) {
   const fontSize = Math.min(w * 0.72, h * 0.1)
   const cx = x + w / 2
   const isLight =
-    plate.color === '#F2EEDF' || plate.color === '#C8C5BB' || plate.color === '#E8C642' || plate.color === '#F5C84B'
+    plate.color === '#F2EEDF' ||
+    plate.color === '#C8C5BB' ||
+    plate.color === '#E8C642' ||
+    plate.color === '#F5C84B' ||
+    plate.color === MONO_PALETTE.color
   const labelFill = isLight ? '#2A2A2E' : 'white'
   const gradId = `plate-grad-${plate.color.slice(1)}`
   return (
