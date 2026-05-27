@@ -169,6 +169,38 @@ function realisticBuild(target: number, unit: Unit): Pick<Round, 'bar' | 'perSid
   return { bar, perSide, unit, tier: 1 }
 }
 
+// Sprint mode uses its own curated pool: lb only, integer totals (so no 1.25 lb
+// plate ever appears), no kg, but a 2.5 lb plate can show up at the harder
+// totals to keep some variety. Difficulty mix is built into the target list.
+const SPRINT_LB_TARGETS: number[] = [
+  // Warm
+  95, 115, 125, 135, 145, 155, 165, 185, 195, 205, 215, 225,
+  // Mid
+  235, 245, 255, 265, 275, 285, 295, 305, 315, 325, 335, 365, 385,
+  // Heavy
+  405, 425, 455, 475, 495,
+]
+const SPRINT_LB_PLATES = [45, 25, 10, 5, 2.5] as const
+
+export function generateSprintRound(): Round {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const target = rand(SPRINT_LB_TARGETS)
+    const bar = BARS['lb-45']
+    const perSideWeight = (target - bar.weight) / 2
+    const weights = greedyLoad(perSideWeight, SPRINT_LB_PLATES)
+    if (!weights || weights.length === 0) continue
+    const perSide = weights.map((w) => plate(w, 'lb'))
+    const total = totalFor(bar, perSide)
+    if (Math.abs(total - target) > 0.01) continue
+    // Pick a tier label from the target band — only matters for the UI chip,
+    // since Sprint uses tally scoring (+1/-1) and ignores per-tier base points.
+    const tier: 1 | 2 | 3 | 4 = target <= 225 ? 1 : target <= 365 ? 2 : target <= 475 ? 3 : 4
+    const { choices, correctIndex } = buildChoices(total, 'lb', tier)
+    return { bar, perSide, total, choices, correctIndex, unit: 'lb', tier }
+  }
+  return generateRound(1)
+}
+
 export function generateRealisticRound(tier: 1 | 2 | 3 | 4): Round {
   // For tier 3+, sometimes pick a kg target. Tiers 1-2 are lb-only for warmup.
   for (let attempt = 0; attempt < 12; attempt++) {

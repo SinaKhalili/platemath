@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { generateRealisticRound, generateRound, tierForRound, type Round } from './rounds'
+import { generateRealisticRound, generateRound, generateSprintRound, tierForRound, type Round } from './rounds'
 
 export type Mode = 'sprint' | 'challenge' | 'practice'
 
@@ -22,9 +22,9 @@ export const MODES: Record<Mode, ModeConfig> = {
     label: 'Sprint',
     rounds: 'endless',
     maxTier: 4,
-    blurb: 'As many as you can in 35 seconds.',
+    blurb: 'As many as you can in 60 seconds.',
     scoring: 'tally',
-    timeLimit: 35,
+    timeLimit: 60,
   },
   challenge: {
     id: 'challenge',
@@ -168,19 +168,17 @@ export function useGame() {
   function buildRound(mode: Mode, roundIndex: number, prevTotal?: number) {
     const cfg = MODES[mode]
     const totalRounds = cfg.rounds === 'endless' ? 25 : cfg.rounds
-    // Sprint samples tiers randomly each round so 5/2.5-using and fractional
-    // weights can appear immediately, not only after a long ramp.
-    const tier =
-      mode === 'sprint'
-        ? (([1, 2, 2, 2, 3, 3, 3, 4] as const)[Math.floor(Math.random() * 8)] as 1 | 2 | 3 | 4)
-        : tierForRound(roundIndex, totalRounds, cfg.maxTier)
+    const tier = tierForRound(roundIndex, totalRounds, cfg.maxTier)
+    const pick = () => {
+      if (mode === 'sprint') return generateSprintRound()
+      return settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
+    }
     // Avoid producing the same total two rounds in a row.
     for (let attempt = 0; attempt < 10; attempt++) {
-      const round = settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
+      const round = pick()
       if (prevTotal === undefined || round.total !== prevTotal) return round
     }
-    // Couldn't find a different one in 10 tries (small target pool at the lowest tiers); take what we have.
-    return settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
+    return pick()
   }
 
   const start = useCallback((mode: Mode) => {
