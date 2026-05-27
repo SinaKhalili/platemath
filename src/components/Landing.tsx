@@ -57,6 +57,12 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
 
           <div className="mt-6 grid sm:grid-cols-2 gap-3">
             <Toggle
+              label="Multiple choice"
+              hint="On = tap an option. Off = type the answer."
+              checked={settings.inputMode === 'choice'}
+              onChange={(v) => setSettings({ inputMode: v ? 'choice' : 'numpad' })}
+            />
+            <Toggle
               label="Real-gym loadouts"
               hint="Only how a real lifter would load the bar"
               checked={settings.realgym}

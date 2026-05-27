@@ -39,10 +39,10 @@ export function Game() {
       state={state}
       multiplier={game.multiplier}
       monochrome={settings.monochrome}
+      inputMode={settings.inputMode}
       onAnswer={game.answer}
       onNext={game.next}
       onQuit={game.toLanding}
-      onToggleInput={game.setInputMode}
     />
   )
 }

@@ -11,13 +11,13 @@ type Props = {
   state: SessionState
   multiplier: number
   monochrome: boolean
+  inputMode: 'choice' | 'numpad'
   onAnswer: (value: number) => void
   onNext: () => void
   onQuit: () => void
-  onToggleInput: (mode: 'choice' | 'numpad') => void
 }
 
-export function RoundScreen({ state, multiplier, monochrome, onAnswer, onNext, onQuit, onToggleInput }: Props) {
+export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer, onNext, onQuit }: Props) {
   const round = state.round!
   const config = MODES[state.mode]
   const total = config.rounds === 'endless' ? '∞' : config.rounds
@@ -126,23 +126,7 @@ export function RoundScreen({ state, multiplier, monochrome, onAnswer, onNext, o
         <TimedWrongStrip round={round} />
       ) : (
         <div className="mt-2">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <button
-              onClick={() => onToggleInput('choice')}
-              className={`chip ${state.inputMode === 'choice' ? 'bg-white shadow-sm' : 'opacity-50'}`}
-              type="button"
-            >
-              Tap
-            </button>
-            <button
-              onClick={() => onToggleInput('numpad')}
-              className={`chip ${state.inputMode === 'numpad' ? 'bg-white shadow-sm' : 'opacity-50'}`}
-              type="button"
-            >
-              Type
-            </button>
-          </div>
-          {state.inputMode === 'choice' ? (
+          {inputMode === 'choice' ? (
             <MultipleChoice
               choices={round.choices}
               correctIndex={round.correctIndex}

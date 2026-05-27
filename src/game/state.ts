@@ -36,9 +36,10 @@ export type Phase = 'landing' | 'playing' | 'reveal' | 'finished'
 export type Settings = {
   realgym: boolean
   monochrome: boolean
+  inputMode: 'choice' | 'numpad'
 }
 
-const DEFAULT_SETTINGS: Settings = { realgym: false, monochrome: false }
+const DEFAULT_SETTINGS: Settings = { realgym: false, monochrome: false, inputMode: 'numpad' }
 
 export type Answer = {
   round: Round
@@ -56,7 +57,6 @@ export type SessionState = {
   score: number
   streak: number
   bestStreak: number
-  inputMode: 'choice' | 'numpad'
   history: Answer[]
   roundStartedAt: number
   lastAnswer: Answer | null
@@ -132,7 +132,6 @@ export function useGame() {
     score: 0,
     streak: 0,
     bestStreak: 0,
-    inputMode: 'choice',
     history: [],
     roundStartedAt: 0,
     lastAnswer: null,
@@ -173,10 +172,6 @@ export function useGame() {
       timeRemaining: cfg.timeLimit ?? null,
     }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const setInputMode = useCallback((m: 'choice' | 'numpad') => {
-    setState((s) => ({ ...s, inputMode: m }))
   }, [])
 
   const finalize = useCallback(
@@ -308,7 +303,6 @@ export function useGame() {
     answer,
     next,
     toLanding,
-    setInputMode,
     accuracy,
     avgTimeMs,
     multiplier: streakMultiplier(state.streak),
