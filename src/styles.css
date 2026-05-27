@@ -354,11 +354,11 @@ button[disabled] {
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 14px;
-  padding: 6px 14px;
+  font-size: 17px;
+  padding: 8px 18px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.7);
   color: var(--color-ink-700);
@@ -439,13 +439,13 @@ button[disabled] {
   font-family: var(--font-display);
   font-weight: 800;
   color: var(--color-ink-800);
-  font-size: 16px;
+  font-size: 18px;
 }
 .toggle__hint {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--color-ink-700);
-  opacity: 0.7;
-  margin-top: 2px;
+  opacity: 0.75;
+  margin-top: 3px;
 }
 .toggle__switch {
   width: 44px;

@@ -62,7 +62,7 @@ export function PostSession({ state, accuracy, avgTimeMs, onPlayAgain, onPractic
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-white/70 px-3 py-3 shadow-[0_2px_0_rgba(180,130,70,0.18)]">
-      <div className="text-xs uppercase tracking-wide text-ink-700/60">{label}</div>
+      <div className="text-sm uppercase tracking-wide text-ink-700/70 font-semibold">{label}</div>
       <div className="fancy-headline text-2xl text-ink-800">{value}</div>
     </div>
   )
