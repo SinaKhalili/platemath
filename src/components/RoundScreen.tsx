@@ -66,9 +66,14 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
         {isTimed ? (
           <TimerDisplay seconds={state.timeRemaining ?? 0} />
         ) : (
-          <div className="chip">
-            Round <span className="font-extrabold ml-1">{state.roundIndex + 1}</span>
-            <span className="opacity-60">/ {total}</span>
+          <div className="flex flex-col items-center gap-1">
+            <div className="chip">
+              Round <span className="font-extrabold ml-1">{state.roundIndex + 1}</span>
+              <span className="opacity-60">/ {total}</span>
+            </div>
+            {state.mode !== 'practice' && (
+              <ElapsedClock startedAt={state.sessionStartedAt} frozenMs={state.sessionElapsedMs} />
+            )}
           </div>
         )}
         <div className="chip">
@@ -145,6 +150,29 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+export function formatElapsed(ms: number): string {
+  const total = Math.floor(ms / 1000)
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
+function ElapsedClock({ startedAt, frozenMs }: { startedAt: number; frozenMs: number | null }) {
+  const [, force] = useState(0)
+  useEffect(() => {
+    if (frozenMs !== null) return
+    const id = setInterval(() => force((x) => (x + 1) % 1_000_000), 1000)
+    return () => clearInterval(id)
+  }, [frozenMs])
+  const ms = frozenMs !== null ? frozenMs : Date.now() - startedAt
+  return (
+    <div className="chip" style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <span>⏱</span>
+      <span className="font-extrabold">{formatElapsed(ms)}</span>
     </div>
   )
 }

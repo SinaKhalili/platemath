@@ -42,6 +42,11 @@ body {
 
 button {
   font-family: inherit;
+  cursor: pointer;
+}
+button:disabled,
+button[disabled] {
+  cursor: not-allowed;
 }
 
 /* --- Barbell animations --- */

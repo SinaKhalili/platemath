@@ -39,7 +39,7 @@ export type Settings = {
   inputMode: 'choice' | 'numpad'
 }
 
-const DEFAULT_SETTINGS: Settings = { realgym: false, monochrome: false, inputMode: 'numpad' }
+const DEFAULT_SETTINGS: Settings = { realgym: true, monochrome: false, inputMode: 'numpad' }
 
 export type Answer = {
   round: Round
@@ -59,6 +59,9 @@ export type SessionState = {
   bestStreak: number
   history: Answer[]
   roundStartedAt: number
+  sessionStartedAt: number
+  /** Frozen at finish; null while playing. */
+  sessionElapsedMs: number | null
   lastAnswer: Answer | null
   /** Seconds remaining for timed modes; null otherwise. */
   timeRemaining: number | null
@@ -134,6 +137,8 @@ export function useGame() {
     bestStreak: 0,
     history: [],
     roundStartedAt: 0,
+    sessionStartedAt: 0,
+    sessionElapsedMs: null,
     lastAnswer: null,
     timeRemaining: null,
   }))
@@ -147,16 +152,23 @@ export function useGame() {
     })
   }, [])
 
-  function buildRound(mode: Mode, roundIndex: number) {
+  function buildRound(mode: Mode, roundIndex: number, prevTotal?: number) {
     const cfg = MODES[mode]
     const totalRounds = cfg.rounds === 'endless' ? 25 : cfg.rounds
     const tier = tierForRound(roundIndex, totalRounds, cfg.maxTier)
+    // Avoid producing the same total two rounds in a row.
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const round = settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
+      if (prevTotal === undefined || round.total !== prevTotal) return round
+    }
+    // Couldn't find a different one in 10 tries (small target pool at the lowest tiers); take what we have.
     return settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
   }
 
   const start = useCallback((mode: Mode) => {
     const cfg = MODES[mode]
     const round = buildRound(mode, 0)
+    const now = Date.now()
     setState((s) => ({
       ...s,
       mode,
@@ -167,7 +179,9 @@ export function useGame() {
       streak: 0,
       bestStreak: 0,
       history: [],
-      roundStartedAt: Date.now(),
+      roundStartedAt: now,
+      sessionStartedAt: now,
+      sessionElapsedMs: null,
       lastAnswer: null,
       timeRemaining: cfg.timeLimit ?? null,
     }))
@@ -177,7 +191,9 @@ export function useGame() {
   const finalize = useCallback(
     (s: SessionState): SessionState => {
       const cfg = MODES[s.mode]
-      if (cfg.scoring === 'points' && s.mode === 'practice') return { ...s, phase: 'finished' }
+      const elapsed = Date.now() - s.sessionStartedAt
+      const finished: SessionState = { ...s, phase: 'finished', sessionElapsedMs: elapsed }
+      if (cfg.scoring === 'points' && s.mode === 'practice') return finished
       const key = bestKey(s.mode, settingsRef.current)
       const prev = bests[key] ?? 0
       if (s.score > prev) {
@@ -185,7 +201,7 @@ export function useGame() {
         saveBest(updated)
         setBests(updated)
       }
-      return { ...s, phase: 'finished' }
+      return finished
     },
     [bests],
   )
@@ -226,7 +242,7 @@ export function useGame() {
       const nextIndex = s.roundIndex + 1
       const sessionOver = config.rounds !== 'endless' && nextIndex >= config.rounds
       if (sessionOver) return finalize(s)
-      const round = buildRound(s.mode, nextIndex)
+      const round = buildRound(s.mode, nextIndex, s.round?.total)
       return {
         ...s,
         roundIndex: nextIndex,

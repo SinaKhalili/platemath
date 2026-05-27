@@ -1,5 +1,6 @@
 import type { SessionState } from '../game/state'
 import { MODES } from '../game/state'
+import { formatElapsed } from './RoundScreen'
 
 type Props = {
   state: SessionState
@@ -25,15 +26,19 @@ export function PostSession({ state, accuracy, avgTimeMs, onPlayAgain, onPractic
         <h2 className="fancy-headline text-3xl mb-1">Rack it up</h2>
         <p className="text-ink-700/70 mb-6">{cfg.label} · {state.history.length} rounds</p>
 
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-3">
           <Stat label="Score" value={String(state.score)} />
           <Stat label="Accuracy" value={`${Math.round(accuracy * 100)}%`} />
-          <Stat label="Avg time" value={avgTimeMs ? `${(avgTimeMs / 1000).toFixed(1)}s` : '—'} />
+          <Stat
+            label="Time"
+            value={state.sessionElapsedMs != null ? formatElapsed(state.sessionElapsedMs) : '—'}
+          />
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Stat label="Avg / round" value={avgTimeMs ? `${(avgTimeMs / 1000).toFixed(1)}s` : '—'} />
           <Stat label="Best streak" value={String(state.bestStreak)} />
           <Stat
-            label="Top tier hit"
+            label="Top tier"
             value={String(state.history.reduce((m, h) => Math.max(m, h.round.tier), 1))}
           />
         </div>
