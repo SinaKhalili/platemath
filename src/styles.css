@@ -536,6 +536,105 @@ button[disabled] {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Leaderboard */
+.leaderboard {
+  background: rgba(255, 251, 240, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 22px;
+  padding: 16px 18px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 20px -10px rgba(140, 100, 50, 0.18);
+}
+.leaderboard__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--color-ink-800);
+  margin-bottom: 10px;
+}
+.leaderboard__tag {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(56, 178, 106, 0.18);
+  color: #2D8E55;
+}
+.leaderboard__empty {
+  font-size: 14px;
+  color: var(--color-ink-700);
+  opacity: 0.7;
+  padding: 8px 0;
+}
+.leaderboard__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  counter-reset: lb;
+}
+.leaderboard__row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px;
+  border-radius: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+}
+.leaderboard__row:nth-child(1) { background: linear-gradient(90deg, #FFE9C7 0%, transparent 60%); }
+.leaderboard__row:nth-child(2) { background: linear-gradient(90deg, #F2EAD8 0%, transparent 60%); }
+.leaderboard__row:nth-child(3) { background: linear-gradient(90deg, #EFE3CB 0%, transparent 60%); }
+.leaderboard__rank {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--color-ink-700);
+  opacity: 0.7;
+  text-align: center;
+}
+.leaderboard__name {
+  color: var(--color-ink-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.leaderboard__score {
+  color: var(--color-ink-800);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.leaderboard__time {
+  color: var(--color-ink-700);
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: right;
+}
+
+.leaderboard-name-input {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: white;
+  border: 2px solid rgba(180, 130, 70, 0.25);
+  outline: none;
+  color: var(--color-ink-800);
+}
+.leaderboard-name-input:focus { border-color: var(--color-mint-500); }
+
 @media (prefers-reduced-motion: reduce) {
   .options-panel, .options-panel .toggle, .options-chevron { animation: none !important; transition: none !important; }
 }

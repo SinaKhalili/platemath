@@ -6,7 +6,8 @@
 		"#/*": "./src/*"
 	},
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "convex dev --start \"vite dev\"",
+		"dev:vite": "vite dev",
 		"build": "vite build",
 		"preview": "pnpm run build && vite preview",
 		"test": "vitest run",
@@ -22,6 +23,7 @@
 		"@tanstack/react-router-ssr-query": "latest",
 		"@tanstack/react-start": "latest",
 		"@tanstack/router-plugin": "^1.132.0",
+		"convex": "^1.39.1",
 		"lucide-react": "^0.545.0",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",

@@ -26,6 +26,8 @@ export function Game() {
         state={state}
         accuracy={game.accuracy}
         avgTimeMs={game.avgTimeMs}
+        settings={settings}
+        setSettings={game.setSettings}
         onPlayAgain={() => game.start(state.mode)}
         onPractice={() => game.start('practice')}
         onHome={game.toLanding}

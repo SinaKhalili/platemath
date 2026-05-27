@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MODES, type Mode, type Settings } from '../game/state'
 import { Barbell } from './Barbell'
 import { BARS, plate } from '../game/plates'
+import { Leaderboard } from './Leaderboard'
 
 type Props = {
   onStart: (mode: Mode) => void
@@ -98,12 +99,17 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
               const score = bests[bestKeyFor(m, settings)] ?? null
               return (
                 <div key={m} className="chip">
-                  <span>Best {MODES[m].label}{settings.realgym ? ' (RG)' : ''}:</span>
+                  <span>Your best {MODES[m].label}:</span>
                   <span className="font-extrabold text-ink-800">{score ?? '—'}</span>
                 </div>
               )
             })}
           </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4 mt-6">
+          <Leaderboard mode="sprint" realgym={settings.realgym} title="Top Sprint" />
+          <Leaderboard mode="challenge" realgym={settings.realgym} title="Top Challenge" />
         </div>
 
         <p className="text-center text-sm mt-8 text-ink-700/60">

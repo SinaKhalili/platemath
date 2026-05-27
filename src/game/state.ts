@@ -43,9 +43,16 @@ export type Settings = {
   realgym: boolean
   monochrome: boolean
   inputMode: 'choice' | 'numpad'
+  /** Empty string means we've never asked for a name; non-empty is what they typed. */
+  playerName: string
 }
 
-const DEFAULT_SETTINGS: Settings = { realgym: true, monochrome: false, inputMode: 'numpad' }
+const DEFAULT_SETTINGS: Settings = {
+  realgym: true,
+  monochrome: false,
+  inputMode: 'numpad',
+  playerName: '',
+}
 
 export type Answer = {
   round: Round
