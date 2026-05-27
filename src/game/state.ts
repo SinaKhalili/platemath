@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { generateRealisticRound, generateRound, tierForRound, type Round } from './rounds'
 
-export type Mode = 'sprint' | 'quick' | 'standard' | 'practice'
+export type Mode = 'sprint' | 'challenge' | 'practice'
 
 export type Scoring = 'points' | 'tally'
 
@@ -26,8 +26,14 @@ export const MODES: Record<Mode, ModeConfig> = {
     scoring: 'tally',
     timeLimit: 35,
   },
-  quick: { id: 'quick', label: 'Quick Play', rounds: 10, maxTier: 2, blurb: 'Ten rounds, classic combos.', scoring: 'points' },
-  standard: { id: 'standard', label: 'Standard', rounds: 25, maxTier: 4, blurb: 'Twenty-five rounds. Tiers 1 through 4.', scoring: 'points' },
+  challenge: {
+    id: 'challenge',
+    label: 'Challenge',
+    rounds: 25,
+    maxTier: 4,
+    blurb: 'Do 25 rounds as fast as you can.',
+    scoring: 'points',
+  },
   practice: { id: 'practice', label: 'Practice', rounds: 'endless', maxTier: 4, blurb: 'Endless drilling. No score.', scoring: 'points' },
 }
 
@@ -128,7 +134,7 @@ export function useGame() {
   settingsRef.current = settings
 
   const [state, setState] = useState<SessionState>(() => ({
-    mode: 'quick',
+    mode: 'challenge',
     roundIndex: 0,
     round: null,
     phase: 'landing',

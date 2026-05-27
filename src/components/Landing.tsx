@@ -11,12 +11,11 @@ type Props = {
   bestKeyFor: (mode: Mode, settings: Settings) => string
 }
 
-const MODE_ORDER: Mode[] = ['sprint', 'quick', 'standard', 'practice']
+const MODE_ORDER: Mode[] = ['sprint', 'challenge', 'practice']
 
 const MODE_STYLES: Record<Mode, string> = {
   sprint: 'btn-chunky btn-chunky--rose',
-  quick: 'btn-chunky',
-  standard: 'btn-chunky btn-chunky--mint',
+  challenge: 'btn-chunky btn-chunky--mint',
   practice: 'btn-chunky btn-chunky--ghost',
 }
 
@@ -42,7 +41,7 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
         </div>
 
         <div className="card p-6 md:p-8 mt-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             {MODE_ORDER.map((m) => (
               <button
                 key={m}
@@ -95,7 +94,7 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
           )}
 
           <div className="mt-6 flex flex-wrap justify-center gap-2 text-center">
-            {(['sprint', 'quick', 'standard'] as Mode[]).map((m) => {
+            {(['sprint', 'challenge'] as Mode[]).map((m) => {
               const score = bests[bestKeyFor(m, settings)] ?? null
               return (
                 <div key={m} className="chip">
