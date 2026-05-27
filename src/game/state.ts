@@ -40,7 +40,6 @@ export const MODES: Record<Mode, ModeConfig> = {
 export type Phase = 'landing' | 'playing' | 'reveal' | 'finished'
 
 export type Settings = {
-  realgym: boolean
   monochrome: boolean
   inputMode: 'choice' | 'numpad'
   /** Empty string means we've never asked for a name; non-empty is what they typed. */
@@ -50,7 +49,6 @@ export type Settings = {
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  realgym: true,
   monochrome: false,
   inputMode: 'numpad',
   playerName: '',
@@ -146,16 +144,12 @@ function basePoints(tier: 1 | 2 | 3 | 4): number {
   return [100, 150, 220, 320][tier - 1]
 }
 
-function bestKey(mode: Mode, settings: Settings): string {
-  // Best scores are tracked separately when Real Gym is on, since the difficulty differs.
-  // Monochrome doesn't affect difficulty so it's not part of the key.
-  return settings.realgym ? `${mode}:realgym` : mode
+function bestKey(mode: Mode): string {
+  return mode
 }
 
 export function useGame() {
   const [settings, setSettingsState] = useState<Settings>(() => loadSettings())
-  const settingsRef = useRef(settings)
-  settingsRef.current = settings
 
   const [state, setState] = useState<SessionState>(() => ({
     mode: 'challenge',
@@ -186,11 +180,7 @@ export function useGame() {
     const cfg = MODES[mode]
     const totalRounds = cfg.rounds === 'endless' ? 25 : cfg.rounds
     const tier = tierForRound(roundIndex, totalRounds, cfg.maxTier)
-    const pick = () => {
-      if (mode === 'sprint') return generateSprintRound()
-      return settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
-    }
-    // Avoid producing the same total two rounds in a row.
+    const pick = () => (mode === 'sprint' ? generateSprintRound() : generateRealisticRound(tier))
     for (let attempt = 0; attempt < 10; attempt++) {
       const round = pick()
       if (prevTotal === undefined || round.total !== prevTotal) return round
@@ -227,7 +217,7 @@ export function useGame() {
       const elapsed = Date.now() - s.sessionStartedAt
       const finished: SessionState = { ...s, phase: 'finished', sessionElapsedMs: elapsed }
       if (cfg.scoring === 'points' && s.mode === 'practice') return finished
-      const key = bestKey(s.mode, settingsRef.current)
+      const key = bestKey(s.mode)
       const prev = bests[key] ?? 0
       if (s.score > prev) {
         const updated = { ...bests, [key]: s.score }
@@ -339,7 +329,7 @@ export function useGame() {
     return correct.reduce((s, h) => s + h.elapsedMs, 0) / correct.length
   }, [state.history])
 
-  const currentBestKey = bestKey(state.mode, settings)
+  const currentBestKey = bestKey(state.mode)
 
   return {
     state,

@@ -9,7 +9,6 @@ type Props = {
   bests: Record<string, number>
   settings: Settings
   setSettings: (partial: Partial<Settings>) => void
-  bestKeyFor: (mode: Mode, settings: Settings) => string
 }
 
 const MODE_ORDER: Mode[] = ['sprint', 'challenge', 'practice']
@@ -20,7 +19,7 @@ const MODE_STYLES: Record<Mode, string> = {
   practice: 'btn-chunky btn-chunky--ghost',
 }
 
-export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: Props) {
+export function Landing({ onStart, bests, settings, setSettings }: Props) {
   const heroPlates = [plate(45, 'lb'), plate(25, 'lb')]
   const [optionsOpen, setOptionsOpen] = useState(false)
 
@@ -80,12 +79,6 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
                 onChange={(v) => setSettings({ inputMode: v ? 'choice' : 'numpad' })}
               />
               <Toggle
-                label="Real-gym loadouts"
-                hint="Only how a real lifter would load the bar"
-                checked={settings.realgym}
-                onChange={(v) => setSettings({ realgym: v })}
-              />
-              <Toggle
                 label="Colored plates"
                 hint="Off = uniform gray, no Olympic colors"
                 checked={!settings.monochrome}
@@ -96,7 +89,7 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
 
           <div className="mt-6 flex flex-wrap justify-center gap-2 text-center">
             {(['sprint', 'challenge'] as Mode[]).map((m) => {
-              const score = bests[bestKeyFor(m, settings)] ?? null
+              const score = bests[m] ?? null
               return (
                 <div key={m} className="chip">
                   <span>Your best {MODES[m].label}:</span>
@@ -108,18 +101,8 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 mt-6">
-          <Leaderboard
-            mode="sprint"
-            realgym={settings.realgym}
-            title="Top Sprint"
-            playerId={settings.playerId}
-          />
-          <Leaderboard
-            mode="challenge"
-            realgym={settings.realgym}
-            title="Top Challenge"
-            playerId={settings.playerId}
-          />
+          <Leaderboard mode="sprint" title="Top Sprint" playerId={settings.playerId} />
+          <Leaderboard mode="challenge" title="Top Challenge" playerId={settings.playerId} />
         </div>
 
         <p className="text-center text-sm mt-8 text-ink-700/60">

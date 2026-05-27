@@ -113,7 +113,7 @@ function LeaderboardSubmit({
     setStatus('submitting')
     submit({
       mode: state.mode,
-      realgym: settings.realgym,
+      realgym: true,
       score: state.score,
       accuracy,
       elapsedMs: state.sessionElapsedMs ?? 0,
@@ -124,7 +124,7 @@ function LeaderboardSubmit({
     })
       .then(() => setStatus('submitted'))
       .catch(() => setStatus('error'))
-  }, [submit, settings.playerName, settings.realgym, state, accuracy])
+  }, [submit, settings.playerName, settings.playerId, state, accuracy])
 
   if (settings.playerName.trim().length === 0) {
     return (

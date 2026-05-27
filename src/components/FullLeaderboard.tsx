@@ -5,14 +5,13 @@ import { formatElapsed } from './RoundScreen'
 
 type Props = {
   mode: 'sprint' | 'challenge'
-  realgym: boolean
   title: string
   playerId: string
   onClose: () => void
 }
 
-export function FullLeaderboard({ mode, realgym, title, playerId, onClose }: Props) {
-  const rows = useQuery(api.scores.topScores, { mode, realgym, limit: 2000 })
+export function FullLeaderboard({ mode, title, playerId, onClose }: Props) {
+  const rows = useQuery(api.scores.topScores, { mode, realgym: true, limit: 2000 })
   const myRowRef = useRef<HTMLLIElement | null>(null)
 
   // Center the player's row when the list loads.
@@ -42,7 +41,6 @@ export function FullLeaderboard({ mode, realgym, title, playerId, onClose }: Pro
           <div className="fancy-headline text-2xl flex items-center gap-2">
             <span>🏆</span>
             <span>{title}</span>
-            {realgym ? <span className="leaderboard__tag">Real Gym</span> : null}
           </div>
           <button className="modal-close" type="button" onClick={onClose} aria-label="Close">
             ×

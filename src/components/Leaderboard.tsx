@@ -6,13 +6,12 @@ import { FullLeaderboard } from './FullLeaderboard'
 
 type Props = {
   mode: 'sprint' | 'challenge'
-  realgym: boolean
   title: string
   playerId: string
 }
 
-export function Leaderboard({ mode, realgym, title, playerId }: Props) {
-  const rows = useQuery(api.scores.topScores, { mode, realgym, limit: 5 })
+export function Leaderboard({ mode, title, playerId }: Props) {
+  const rows = useQuery(api.scores.topScores, { mode, realgym: true, limit: 5 })
   const [open, setOpen] = useState(false)
 
   return (
@@ -21,7 +20,6 @@ export function Leaderboard({ mode, realgym, title, playerId }: Props) {
         <div className="leaderboard__title">
           <span>🏆</span>
           <span>{title}</span>
-          {realgym ? <span className="leaderboard__tag">Real Gym</span> : null}
         </div>
         {rows === undefined ? (
           <div className="leaderboard__empty">Loading…</div>
@@ -54,7 +52,6 @@ export function Leaderboard({ mode, realgym, title, playerId }: Props) {
       {open && (
         <FullLeaderboard
           mode={mode}
-          realgym={realgym}
           title={title}
           playerId={playerId}
           onClose={() => setOpen(false)}

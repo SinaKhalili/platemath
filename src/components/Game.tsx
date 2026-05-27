@@ -14,7 +14,6 @@ export function Game() {
         bests={game.bests}
         settings={settings}
         setSettings={game.setSettings}
-        bestKeyFor={game.bestKey}
       />
     )
   }
