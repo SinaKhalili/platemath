@@ -1,43 +1,44 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Props = {
   onSubmit: (value: number) => void
   disabled?: boolean
   unit: 'lb' | 'kg'
+  /** Bumps focus back into the input — pass the round index so each new round refocuses. */
+  focusKey: number | string
 }
 
-export function NumberPad({ onSubmit, disabled, unit }: Props) {
+export function NumberPad({ onSubmit, disabled, unit, focusKey }: Props) {
   const [value, setValue] = useState('')
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
+  // Reset the entry and pull focus back when the round changes or once we're playable again.
   useEffect(() => {
-    if (disabled) return
-    function onKey(e: KeyboardEvent) {
-      if (e.key >= '0' && e.key <= '9') {
-        setValue((v) => (v.length < 5 ? v + e.key : v))
-      } else if (e.key === 'Backspace') {
-        setValue((v) => v.slice(0, -1))
-      } else if (e.key === '.' && !value.includes('.')) {
-        setValue((v) => (v.length === 0 ? '0.' : v + '.'))
-      } else if (e.key === 'Enter') {
-        const n = parseFloat(value)
-        if (!isNaN(n)) {
-          onSubmit(n)
-          setValue('')
-        }
-      }
+    setValue('')
+    if (!disabled) {
+      // Tiny defer so any animation/transition that just stole focus settles first.
+      const id = window.setTimeout(() => inputRef.current?.focus(), 0)
+      return () => window.clearTimeout(id)
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [value, disabled, onSubmit])
+  }, [focusKey, disabled])
+
+  function sanitize(next: string): string {
+    // Allow only digits and a single dot, max 6 visible chars (e.g., "499.75").
+    let cleaned = next.replace(/[^0-9.]/g, '')
+    const firstDot = cleaned.indexOf('.')
+    if (firstDot !== -1) {
+      cleaned = cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, '')
+    }
+    if (cleaned.startsWith('.')) cleaned = '0' + cleaned
+    return cleaned.slice(0, 6)
+  }
 
   function press(s: string) {
     if (disabled) return
+    inputRef.current?.focus()
     if (s === '⌫') setValue((v) => v.slice(0, -1))
-    else if (s === '.') {
-      if (!value.includes('.')) setValue((v) => (v.length === 0 ? '0.' : v + '.'))
-    } else {
-      setValue((v) => (v.length < 5 ? v + s : v))
-    }
+    else if (s === '.') setValue((v) => sanitize(v.length === 0 ? '0.' : v + '.'))
+    else setValue((v) => sanitize(v + s))
   }
 
   function submit() {
@@ -50,14 +51,32 @@ export function NumberPad({ onSubmit, disabled, unit }: Props) {
   }
 
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫']
-  const displayValue = value.length === 0 ? '0' : value
 
   return (
-    <div className="flex flex-col items-stretch gap-4 w-full max-w-sm mx-auto">
-      <div className={`number-display ${value.length === 0 ? 'number-display--placeholder' : ''}`}>
-        {displayValue}
-        <span className="text-2xl ml-2 opacity-60">{unit}</span>
-      </div>
+    <form
+      className="flex flex-col items-stretch gap-4 w-full max-w-sm mx-auto"
+      onSubmit={(e) => {
+        e.preventDefault()
+        submit()
+      }}
+    >
+      <label className={`number-display ${value.length === 0 ? 'number-display--placeholder' : ''}`}>
+        <input
+          ref={inputRef}
+          className="number-display__input"
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          value={value}
+          placeholder="0"
+          disabled={disabled}
+          onChange={(e) => setValue(sanitize(e.target.value))}
+          aria-label="Total weight"
+        />
+        <span className="number-display__unit">{unit}</span>
+      </label>
       <div className="grid grid-cols-3 gap-3">
         {keys.map((k) => (
           <button
@@ -66,6 +85,7 @@ export function NumberPad({ onSubmit, disabled, unit }: Props) {
             onClick={() => press(k)}
             disabled={disabled}
             type="button"
+            tabIndex={-1}
           >
             {k}
           </button>
@@ -73,12 +93,12 @@ export function NumberPad({ onSubmit, disabled, unit }: Props) {
       </div>
       <button
         className="btn-chunky btn-chunky--mint"
-        onClick={submit}
         disabled={disabled || value.length === 0}
-        type="button"
+        type="submit"
+        tabIndex={-1}
       >
         Lock it in
       </button>
-    </div>
+    </form>
   )
 }

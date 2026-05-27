@@ -136,7 +136,12 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
               disabled={state.phase !== 'playing'}
             />
           ) : (
-            <NumberPad onSubmit={onAnswer} unit={round.unit} disabled={state.phase !== 'playing'} />
+            <NumberPad
+              onSubmit={onAnswer}
+              unit={round.unit}
+              disabled={state.phase !== 'playing'}
+              focusKey={state.roundIndex}
+            />
           )}
         </div>
       )}
