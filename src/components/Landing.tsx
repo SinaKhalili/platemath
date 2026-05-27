@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { MODES, type Mode, type Settings } from '../game/state'
 import { Barbell } from './Barbell'
 import { BARS, plate } from '../game/plates'
@@ -21,6 +22,7 @@ const MODE_STYLES: Record<Mode, string> = {
 
 export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: Props) {
   const heroPlates = [plate(45, 'lb'), plate(25, 'lb')]
+  const [optionsOpen, setOptionsOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10">
@@ -55,26 +57,40 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
             ))}
           </div>
 
-          <div className="mt-6 grid sm:grid-cols-2 gap-3">
-            <Toggle
-              label="Multiple choice"
-              hint="On = tap an option. Off = type the answer."
-              checked={settings.inputMode === 'choice'}
-              onChange={(v) => setSettings({ inputMode: v ? 'choice' : 'numpad' })}
-            />
-            <Toggle
-              label="Real-gym loadouts"
-              hint="Only how a real lifter would load the bar"
-              checked={settings.realgym}
-              onChange={(v) => setSettings({ realgym: v })}
-            />
-            <Toggle
-              label="Colored plates"
-              hint="Off = uniform gray, no Olympic colors"
-              checked={!settings.monochrome}
-              onChange={(v) => setSettings({ monochrome: !v })}
-            />
+          <div className="mt-5 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setOptionsOpen((v) => !v)}
+              className="chip hover:scale-105 transition-transform"
+              aria-expanded={optionsOpen}
+            >
+              <span>⚙</span>
+              <span>Options</span>
+              <span className="opacity-60">{optionsOpen ? '▲' : '▼'}</span>
+            </button>
           </div>
+          {optionsOpen && (
+            <div className="mt-4 grid sm:grid-cols-2 gap-3">
+              <Toggle
+                label="Multiple choice"
+                hint="On = tap an option. Off = type the answer."
+                checked={settings.inputMode === 'choice'}
+                onChange={(v) => setSettings({ inputMode: v ? 'choice' : 'numpad' })}
+              />
+              <Toggle
+                label="Real-gym loadouts"
+                hint="Only how a real lifter would load the bar"
+                checked={settings.realgym}
+                onChange={(v) => setSettings({ realgym: v })}
+              />
+              <Toggle
+                label="Colored plates"
+                hint="Off = uniform gray, no Olympic colors"
+                checked={!settings.monochrome}
+                onChange={(v) => setSettings({ monochrome: !v })}
+              />
+            </div>
+          )}
 
           <div className="mt-6 flex flex-wrap justify-center gap-2 text-center">
             {(['sprint', 'quick', 'standard'] as Mode[]).map((m) => {
