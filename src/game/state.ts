@@ -155,7 +155,12 @@ export function useGame() {
   function buildRound(mode: Mode, roundIndex: number, prevTotal?: number) {
     const cfg = MODES[mode]
     const totalRounds = cfg.rounds === 'endless' ? 25 : cfg.rounds
-    const tier = tierForRound(roundIndex, totalRounds, cfg.maxTier)
+    // Sprint samples tiers randomly each round so 5/2.5-using and fractional
+    // weights can appear immediately, not only after a long ramp.
+    const tier =
+      mode === 'sprint'
+        ? (([1, 2, 2, 2, 3, 3, 3, 4] as const)[Math.floor(Math.random() * 8)] as 1 | 2 | 3 | 4)
+        : tierForRound(roundIndex, totalRounds, cfg.maxTier)
     // Avoid producing the same total two rounds in a row.
     for (let attempt = 0; attempt < 10; attempt++) {
       const round = settingsRef.current.realgym ? generateRealisticRound(tier) : generateRound(tier)
