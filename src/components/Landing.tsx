@@ -61,16 +61,18 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
             <button
               type="button"
               onClick={() => setOptionsOpen((v) => !v)}
-              className="chip hover:scale-105 transition-transform"
+              className="chip options-toggle"
               aria-expanded={optionsOpen}
             >
               <span>⚙</span>
               <span>Options</span>
-              <span className="opacity-60">{optionsOpen ? '▲' : '▼'}</span>
+              <span className={`options-chevron ${optionsOpen ? 'options-chevron--open' : ''}`} aria-hidden>
+                ▾
+              </span>
             </button>
           </div>
           {optionsOpen && (
-            <div className="mt-4 grid sm:grid-cols-2 gap-3">
+            <div className="options-panel mt-4 grid sm:grid-cols-2 gap-3">
               <Toggle
                 label="Multiple choice"
                 hint="On = tap an option. Off = type the answer."
