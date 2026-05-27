@@ -20,10 +20,13 @@ export const submit = mutation({
     name: v.string(),
     rounds: v.number(),
     bestStreak: v.number(),
+    /** Stable per-device id so two players who pick the same name don't collide. */
+    playerId: v.string(),
   },
   handler: async (ctx, args) => {
     if (!Number.isFinite(args.score) || args.score < 0) return null
     if (args.rounds <= 0) return null
+    if (args.playerId.length === 0) return null
     const { display, key } = normalizeName(args.name)
     const id = await ctx.db.insert('scores', {
       mode: args.mode,
@@ -33,6 +36,7 @@ export const submit = mutation({
       elapsedMs: Math.max(0, Math.round(args.elapsedMs)),
       name: display,
       nameKey: key,
+      playerId: args.playerId,
       rounds: args.rounds,
       bestStreak: Math.max(0, Math.round(args.bestStreak)),
     })
@@ -64,12 +68,15 @@ export const topScores = query({
         ? [...candidates].sort((a, b) => b.score - a.score || a.elapsedMs - b.elapsedMs)
         : candidates
 
-    // Collapse to one row per player (best run).
+    // Collapse to one row per player (best run). Prefer playerId so two players
+    // with the same display name keep separate rows; fall back to nameKey for
+    // pre-uuid legacy rows.
     const seen = new Set<string>()
     const result: typeof sorted = []
     for (const row of sorted) {
-      if (seen.has(row.nameKey)) continue
-      seen.add(row.nameKey)
+      const key = row.playerId ?? `legacy:${row.nameKey}`
+      if (seen.has(key)) continue
+      seen.add(key)
       result.push(row)
       if (result.length >= limit) break
     }

@@ -118,6 +118,7 @@ function LeaderboardSubmit({
       accuracy,
       elapsedMs: state.sessionElapsedMs ?? 0,
       name: settings.playerName,
+      playerId: settings.playerId,
       rounds: state.history.length,
       bestStreak: state.bestStreak,
     })

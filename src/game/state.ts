@@ -45,6 +45,8 @@ export type Settings = {
   inputMode: 'choice' | 'numpad'
   /** Empty string means we've never asked for a name; non-empty is what they typed. */
   playerName: string
+  /** Stable per-device UUID. Generated once on first load; never shown to the user. */
+  playerId: string
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -52,6 +54,14 @@ const DEFAULT_SETTINGS: Settings = {
   monochrome: false,
   inputMode: 'numpad',
   playerName: '',
+  playerId: '',
+}
+
+function makePlayerId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID()
+  }
+  return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 }
 
 export type Answer = {
@@ -103,10 +113,17 @@ function loadSettings(): Settings {
   if (typeof window === 'undefined') return DEFAULT_SETTINGS
   try {
     const raw = localStorage.getItem('platemath:settings')
-    if (!raw) return DEFAULT_SETTINGS
-    return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) }
+    const parsed = raw ? (JSON.parse(raw) as Partial<Settings>) : {}
+    let merged: Settings = { ...DEFAULT_SETTINGS, ...parsed }
+    if (!merged.playerId) {
+      merged = { ...merged, playerId: makePlayerId() }
+      saveSettings(merged)
+    }
+    return merged
   } catch {
-    return DEFAULT_SETTINGS
+    const fresh = { ...DEFAULT_SETTINGS, playerId: makePlayerId() }
+    saveSettings(fresh)
+    return fresh
   }
 }
 

@@ -19,6 +19,8 @@ export default defineSchema({
     /** Display name. Lowercased lookup name is stored in `nameKey`. */
     name: v.string(),
     nameKey: v.string(),
+    /** Stable per-device UUID. Optional only for backwards compat with pre-uuid rows. */
+    playerId: v.optional(v.string()),
     /** Number of rounds completed. */
     rounds: v.number(),
     /** Player's longest streak in the session. */
