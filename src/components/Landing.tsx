@@ -108,8 +108,18 @@ export function Landing({ onStart, bests, settings, setSettings, bestKeyFor }: P
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 mt-6">
-          <Leaderboard mode="sprint" realgym={settings.realgym} title="Top Sprint" />
-          <Leaderboard mode="challenge" realgym={settings.realgym} title="Top Challenge" />
+          <Leaderboard
+            mode="sprint"
+            realgym={settings.realgym}
+            title="Top Sprint"
+            playerId={settings.playerId}
+          />
+          <Leaderboard
+            mode="challenge"
+            realgym={settings.realgym}
+            title="Top Challenge"
+            playerId={settings.playerId}
+          />
         </div>
 
         <p className="text-center text-sm mt-8 text-ink-700/60">

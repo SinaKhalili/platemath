@@ -51,10 +51,10 @@ export const topScores = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const limit = Math.min(50, Math.max(1, args.limit ?? 5))
-    // Pull a bit more than `limit` so we can collapse to best-per-player without
-    // missing entries when many runs share the same nameKey.
-    const overscan = limit * 6
+    const limit = Math.min(2000, Math.max(1, args.limit ?? 5))
+    // Pull a multiple of `limit` so we can collapse to best-per-player without
+    // missing entries when many runs belong to the same player. Capped at 5000.
+    const overscan = Math.min(5000, Math.max(limit * 4, 60))
     // Highest score first within (mode, realgym).
     const candidates = await ctx.db
       .query('scores')
@@ -89,6 +89,7 @@ export const topScores = query({
       elapsedMs: r.elapsedMs,
       rounds: r.rounds,
       bestStreak: r.bestStreak,
+      playerId: r.playerId,
     }))
   },
 })
