@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { generateRealisticRound, generateSprintRound, tierForRound, type Round } from './rounds'
 
 export type Mode = 'sprint' | 'challenge' | 'practice'
@@ -46,6 +46,8 @@ export type Settings = {
   playerName: string
   /** Stable per-device UUID. Generated once on first load; never shown to the user. */
   playerId: string
+  /** Hidden testing switch: shortens Sprint to 5s and suppresses leaderboard writes. */
+  devMode: boolean
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -53,7 +55,11 @@ const DEFAULT_SETTINGS: Settings = {
   inputMode: 'numpad',
   playerName: '',
   playerId: '',
+  devMode: false,
 }
+
+/** Sprint duration when dev mode is on, for quick testing. */
+const DEV_SPRINT_SECONDS = 5
 
 function makePlayerId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -150,6 +156,10 @@ function bestKey(mode: Mode): string {
 
 export function useGame() {
   const [settings, setSettingsState] = useState<Settings>(() => loadSettings())
+  // Mirror settings into a ref so the memoized `start` callback can read the
+  // latest values (e.g. dev mode) without being re-created.
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
 
   const [state, setState] = useState<SessionState>(() => ({
     mode: 'challenge',
@@ -192,6 +202,9 @@ export function useGame() {
     const cfg = MODES[mode]
     const round = buildRound(mode, 0)
     const now = Date.now()
+    // Dev mode shortens Sprint so the timed flow can be tested quickly.
+    const timeLimit =
+      mode === 'sprint' && settingsRef.current.devMode ? DEV_SPRINT_SECONDS : cfg.timeLimit ?? null
     setState((s) => ({
       ...s,
       mode,
@@ -206,7 +219,7 @@ export function useGame() {
       sessionStartedAt: now,
       sessionElapsedMs: null,
       lastAnswer: null,
-      timeRemaining: cfg.timeLimit ?? null,
+      timeRemaining: timeLimit,
     }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

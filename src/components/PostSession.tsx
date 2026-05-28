@@ -116,6 +116,7 @@ function LeaderboardSubmit({
   // Auto-submit once when a name already exists.
   useEffect(() => {
     if (didSubmitRef.current) return
+    if (settings.devMode) return // dev/test runs never touch the global leaderboard
     if (!settings.playerName.trim()) return
     if (state.mode !== 'sprint' && state.mode !== 'challenge') return
     didSubmitRef.current = true
@@ -133,7 +134,16 @@ function LeaderboardSubmit({
     })
       .then(() => setStatus('submitted'))
       .catch(() => setStatus('error'))
-  }, [submit, settings.playerName, settings.playerId, state, accuracy])
+  }, [submit, settings.playerName, settings.playerId, settings.devMode, state, accuracy])
+
+  if (settings.devMode) {
+    return (
+      <div className="mb-6 flex items-center justify-center gap-2 text-sm text-ink-700/80">
+        <span>🛠</span>
+        <span>Dev mode — score not submitted</span>
+      </div>
+    )
+  }
 
   if (settings.playerName.trim().length === 0) {
     return (

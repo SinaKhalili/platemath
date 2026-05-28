@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation } from 'convex/react'
 import { MODES, type Mode, type Settings } from '../game/state'
 import { Barbell } from './Barbell'
@@ -24,12 +24,27 @@ const MODE_STYLES: Record<Mode, string> = {
 export function Landing({ onStart, bests, settings, setSettings }: Props) {
   const heroPlates = [plate(45, 'lb'), plate(25, 'lb')]
   const [optionsOpen, setOptionsOpen] = useState(false)
+  const lifterClicks = useRef(0)
+
+  function onLifterClick() {
+    lifterClicks.current += 1
+    if (lifterClicks.current >= 5) {
+      lifterClicks.current = 0
+      setSettings({ devMode: !settings.devMode })
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10">
       <div className="w-full max-w-3xl">
         <div className="text-center mb-2">
-          <span className="chip">🏋️‍♀️ Mental gym math, made fun</span>
+          <span className="chip">
+            <button type="button" className="lifter-secret" onClick={onLifterClick} aria-label="Plate Math">
+              🏋️‍♀️
+            </button>
+            <span>Mental gym math, made fun</span>
+            {settings.devMode && <span className="dev-badge">DEV · 5s sprint</span>}
+          </span>
         </div>
         <h1 className="fancy-headline text-6xl md:text-7xl text-center mt-3 text-ink-800">
           Plate <span className="text-peach-400">Math</span>
