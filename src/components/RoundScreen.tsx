@@ -100,7 +100,11 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
           <Barbell
             bar={round.bar}
             perSide={round.perSide}
-            animKey={`${state.roundIndex}-${state.phase}`}
+            // Key only on the round index so the plate drop-in plays once per
+            // new round. The reveal (phase change) must NOT remount the group,
+            // or the plates would re-drop right before hopping — keep the
+            // celebratory hop / shake as the only reveal animation.
+            animKey={state.roundIndex}
             hop={showingResult && wasCorrect}
             shake={showingResult && !wasCorrect}
             monochrome={monochrome}
