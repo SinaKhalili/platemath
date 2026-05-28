@@ -35,5 +35,5 @@ export function buildShareText(opts: {
 }): string {
   const { modeLabel, score, rank, total, url } = opts
   const rankPart = rank && total ? ` — rank #${rank} of ${total}` : ''
-  return `I scored ${score} on Plate Math ${modeLabel}${rankPart} 🏋️ Can you beat me? ${url}`
+  return `💪 I scored ${score} on Plate Math ${modeLabel}${rankPart}. Can you beat me? ${url} 💪`
 }

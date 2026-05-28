@@ -71,12 +71,12 @@ export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
         </ol>
       )}
 
-      <div className="flex gap-2 mt-3">
-        <button className="btn-chunky btn-chunky--ghost flex-1" type="button" onClick={onShare}>
-          {shareLabel ?? 'Share'}
-        </button>
-        <button className="btn-chunky btn-chunky--ghost flex-1" type="button" onClick={() => setShowFull(true)}>
-          Full board
+      <button className="btn-chunky btn-chunky--ghost w-full mt-3" type="button" onClick={onShare}>
+        {shareLabel ?? 'Share'}
+      </button>
+      <div className="text-center">
+        <button className="leaderboard__view-all" type="button" onClick={() => setShowFull(true)}>
+          View full leaderboard →
         </button>
       </div>
 
