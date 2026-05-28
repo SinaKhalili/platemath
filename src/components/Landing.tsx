@@ -17,8 +17,8 @@ type Props = {
 const MODE_ORDER: Mode[] = ['sprint', 'challenge', 'practice']
 
 const MODE_STYLES: Record<Mode, string> = {
-  sprint: 'btn-chunky btn-chunky--rose',
-  challenge: 'btn-chunky btn-chunky--mint',
+  sprint: 'btn-chunky btn-chunky--mint',
+  challenge: 'btn-chunky btn-chunky--rose',
   practice: 'btn-chunky btn-chunky--ghost',
 }
 
