@@ -4,6 +4,7 @@ import type { SessionState, Settings } from '../game/state'
 import { MODES } from '../game/state'
 import { api } from '../../convex/_generated/api'
 import { formatElapsed } from './RoundScreen'
+import { PostGameBoard } from './PostGameBoard'
 
 type Props = {
   state: SessionState
@@ -67,6 +68,14 @@ export function PostSession({
             settings={settings}
             setSettings={setSettings}
             accuracy={accuracy}
+          />
+        )}
+
+        {isRanked && settings.playerName.trim().length > 0 && (
+          <PostGameBoard
+            mode={state.mode as 'sprint' | 'challenge'}
+            modeLabel={cfg.label}
+            playerId={settings.playerId}
           />
         )}
 

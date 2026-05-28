@@ -44,6 +44,27 @@ export const submit = mutation({
   },
 })
 
+export const rename = mutation({
+  args: {
+    playerId: v.string(),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (args.playerId.length === 0) return 0
+    const { display, key } = normalizeName(args.name)
+    const rows = await ctx.db
+      .query('scores')
+      .withIndex('by_player', (q) => q.eq('playerId', args.playerId))
+      .collect()
+    for (const row of rows) {
+      if (row.name !== display || row.nameKey !== key) {
+        await ctx.db.patch(row._id, { name: display, nameKey: key })
+      }
+    }
+    return rows.length
+  },
+})
+
 export const topScores = query({
   args: {
     mode: v.union(v.literal('sprint'), v.literal('challenge')),

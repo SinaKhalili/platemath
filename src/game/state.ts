@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { generateRealisticRound, generateRound, generateSprintRound, tierForRound, type Round } from './rounds'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { generateRealisticRound, generateSprintRound, tierForRound, type Round } from './rounds'
 
 export type Mode = 'sprint' | 'challenge' | 'practice'
 

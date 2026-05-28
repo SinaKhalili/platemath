@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useMutation } from 'convex/react'
 import { MODES, type Mode, type Settings } from '../game/state'
 import { Barbell } from './Barbell'
 import { BARS, plate } from '../game/plates'
 import { Leaderboard } from './Leaderboard'
+import { api } from '../../convex/_generated/api'
 
 type Props = {
   onStart: (mode: Mode) => void
@@ -72,6 +74,13 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
           </div>
           {optionsOpen && (
             <div className="options-panel mt-4 grid sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <NameEditor
+                  name={settings.playerName}
+                  playerId={settings.playerId}
+                  onSave={(name) => setSettings({ playerName: name })}
+                />
+              </div>
               <Toggle
                 label="Multiple choice"
                 hint="On = tap an option. Off = type the answer."
@@ -110,6 +119,80 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
         </p>
       </div>
     </div>
+  )
+}
+
+type NameEditorProps = {
+  name: string
+  playerId: string
+  onSave: (name: string) => void
+}
+
+function NameEditor({ name, playerId, onSave }: NameEditorProps) {
+  const rename = useMutation(api.scores.rename)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(name)
+
+  function commit() {
+    const cleaned = draft.trim().slice(0, 20)
+    setEditing(false)
+    if (cleaned.length === 0 || cleaned === name) return
+    onSave(cleaned)
+    // Update the player's existing leaderboard rows so the rename is retroactive.
+    void rename({ playerId, name: cleaned })
+  }
+
+  if (!editing) {
+    return (
+      <div className="name-editor">
+        <div className="name-editor__text">
+          <div className="toggle__label">Leaderboard name</div>
+          <div className="toggle__hint">
+            {name.trim().length > 0 ? (
+              <>
+                You appear as <span className="font-extrabold text-ink-800">{name}</span>
+              </>
+            ) : (
+              'Not set yet — pick one after your first game, or here.'
+            )}
+          </div>
+        </div>
+        <button
+          type="button"
+          className="btn-chunky btn-chunky--ghost name-editor__btn"
+          onClick={() => {
+            setDraft(name)
+            setEditing(true)
+          }}
+        >
+          {name.trim().length > 0 ? 'Change' : 'Set name'}
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form
+      className="name-editor"
+      onSubmit={(e) => {
+        e.preventDefault()
+        commit()
+      }}
+    >
+      <input
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder="Your name"
+        maxLength={20}
+        className="leaderboard-name-input flex-1"
+        type="text"
+        onBlur={commit}
+      />
+      <button type="submit" className="btn-chunky btn-chunky--mint name-editor__btn">
+        Save
+      </button>
+    </form>
   )
 }
 

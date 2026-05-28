@@ -734,6 +734,47 @@ button[disabled] {
 }
 .leaderboard-name-input:focus { border-color: var(--color-mint-500); }
 
+/* Name editor row in Options */
+.name-editor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(255, 251, 240, 0.85);
+  border: 2px solid rgba(180, 130, 70, 0.18);
+  box-shadow: 0 2px 0 rgba(180, 130, 70, 0.12);
+}
+.name-editor__text { flex: 1; min-width: 0; }
+.name-editor__btn {
+  padding: 10px 18px;
+  font-size: 15px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+/* Post-game rank banner */
+.postgame-rank {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: rgba(56, 178, 106, 0.15);
+  color: #1F6F40;
+  text-align: center;
+}
+.postgame-gap {
+  text-align: center;
+  color: var(--color-ink-700);
+  opacity: 0.5;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 2px 0;
+  list-style: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .options-panel, .options-panel .toggle, .options-chevron { animation: none !important; transition: none !important; }
 }

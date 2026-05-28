@@ -29,5 +29,7 @@ export default defineSchema({
     // Top scores per (mode, realgym), highest first.
     .index('by_board', ['mode', 'realgym', 'score'])
     // Per-player history (so a leaderboard can collapse to "best per player" later).
-    .index('by_player_board', ['nameKey', 'mode', 'realgym']),
+    .index('by_player_board', ['nameKey', 'mode', 'realgym'])
+    // All rows for a single device, used when a player renames themselves.
+    .index('by_player', ['playerId']),
 })

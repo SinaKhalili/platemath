@@ -94,6 +94,8 @@ export function plateThud() {
 export function correctChime() {
   const c = ensure()
   if (!c || !masterGain) return
+  // Local non-null alias so the narrowing survives inside closures below.
+  const out = masterGain
   const now = c.currentTime
 
   // Layered major chord stinger (C-E-G-ish) with a fast attack.
@@ -106,7 +108,7 @@ export function correctChime() {
     g.gain.setValueAtTime(0.0001, now)
     g.gain.exponentialRampToValueAtTime(0.22 / chord.length + 0.06, now + 0.005)
     g.gain.exponentialRampToValueAtTime(0.0001, now + 0.55)
-    osc.connect(g).connect(masterGain)
+    osc.connect(g).connect(out)
     osc.start(now)
     osc.stop(now + 0.6)
   })
@@ -120,7 +122,7 @@ export function correctChime() {
   sg.gain.setValueAtTime(0.0001, now)
   sg.gain.exponentialRampToValueAtTime(0.18, now + 0.01)
   sg.gain.exponentialRampToValueAtTime(0.0001, now + 0.22)
-  swoop.connect(sg).connect(masterGain)
+  swoop.connect(sg).connect(out)
   swoop.start(now)
   swoop.stop(now + 0.25)
 
@@ -133,7 +135,7 @@ export function correctChime() {
   subG.gain.setValueAtTime(0.0001, now)
   subG.gain.exponentialRampToValueAtTime(0.55, now + 0.005)
   subG.gain.exponentialRampToValueAtTime(0.0001, now + 0.28)
-  sub.connect(subG).connect(masterGain)
+  sub.connect(subG).connect(out)
   sub.start(now)
   sub.stop(now + 0.3)
 
@@ -151,7 +153,7 @@ export function correctChime() {
     const hp = c.createBiquadFilter()
     hp.type = 'highpass'
     hp.frequency.value = 1200
-    noise.connect(hp).connect(ng).connect(masterGain)
+    noise.connect(hp).connect(ng).connect(out)
     noise.start(now)
   } catch {
     /* AudioBuffer not supported, skip */
