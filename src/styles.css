@@ -789,11 +789,16 @@ button[disabled] {
   opacity: 0.7;
   margin-bottom: 8px;
 }
-.share__row {
+.share__primary {
+  display: flex;
+  gap: 8px;
+}
+.share__secondary {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
+  margin-top: 8px;
 }
 .share__btn {
   --brand: var(--color-ink-800);
@@ -820,6 +825,17 @@ button[disabled] {
   color: var(--color-ink-800);
   box-shadow: 0 4px 0 #DDB57A, 0 8px 14px -8px rgba(221, 181, 122, 0.55);
 }
+/* Secondary targets: smaller, lighter, brand only as an accent */
+.share__btn--sm {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 13px;
+  border-radius: 11px;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 12%, white);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--brand) 30%, transparent);
+}
+.share__btn--sm:hover { filter: brightness(0.98); }
 
 /* Post-game rank banner */
 .postgame-rank {
