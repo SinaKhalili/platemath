@@ -3,7 +3,8 @@ import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { formatElapsed } from './RoundScreen'
 import { FullLeaderboard } from './FullLeaderboard'
-import { buildShareText, shareText } from '../game/share'
+import { buildShareMessage } from '../game/share'
+import { ShareButtons } from './ShareButtons'
 
 type Props = {
   mode: 'sprint' | 'challenge'
@@ -14,7 +15,6 @@ type Props = {
 export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
   const rows = useQuery(api.scores.topScores, { mode, realgym: true, limit: 2000 })
   const [showFull, setShowFull] = useState(false)
-  const [shareLabel, setShareLabel] = useState<string | null>(null)
 
   if (rows === undefined) {
     return <div className="leaderboard__empty mb-6">Loading leaderboard…</div>
@@ -29,20 +29,13 @@ export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
   const top = rows.slice(0, 5)
   const showOwnRowSeparately = myIndex >= 5
 
-  async function onShare() {
-    const text = buildShareText({
-      modeLabel,
-      score: myRow?.score ?? 0,
-      rank: myRank,
-      total,
-      url: typeof window !== 'undefined' ? window.location.origin : '',
-    })
-    const result = await shareText(text)
-    if (result === 'copied') setShareLabel('Link copied!')
-    else if (result === 'shared') setShareLabel('Shared!')
-    else if (result === 'failed') setShareLabel('Could not share')
-    if (result !== 'failed') window.setTimeout(() => setShareLabel(null), 2000)
-  }
+  const shareMessage = buildShareMessage({
+    modeLabel,
+    score: myRow?.score ?? 0,
+    rank: myRank,
+    total,
+  })
+  const shareUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
   return (
     <div className="mb-6">
@@ -71,10 +64,9 @@ export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
         </ol>
       )}
 
-      <button className="btn-chunky btn-chunky--ghost w-full mt-3" type="button" onClick={onShare}>
-        {shareLabel ?? 'Share'}
-      </button>
-      <div className="text-center">
+      {myRow && <ShareButtons message={shareMessage} url={shareUrl} />}
+
+      <div className="text-center mt-2">
         <button className="leaderboard__view-all" type="button" onClick={() => setShowFull(true)}>
           View full leaderboard →
         </button>

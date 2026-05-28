@@ -777,6 +777,50 @@ button[disabled] {
   color: #FFE9C7;
 }
 
+/* Share targets */
+.share {
+  margin-top: 14px;
+}
+.share__label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-ink-700);
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+.share__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.share__btn {
+  --brand: var(--color-ink-800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 14px;
+  color: white;
+  background: var(--brand);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18), 0 8px 14px -8px rgba(0, 0, 0, 0.4);
+  transition: transform 100ms ease, filter 100ms ease;
+}
+.share__btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.share__btn:active { transform: translateY(2px); }
+.share__btn--copy {
+  background: linear-gradient(180deg, #FFFBF1, #FBE8C2);
+  color: var(--color-ink-800);
+  box-shadow: 0 4px 0 #DDB57A, 0 8px 14px -8px rgba(221, 181, 122, 0.55);
+}
+
 /* Post-game rank banner */
 .postgame-rank {
   font-family: var(--font-display);

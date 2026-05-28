@@ -1,39 +1,42 @@
-export type ShareResult = 'shared' | 'copied' | 'failed'
-
-/**
- * Share a result line. Uses the native share sheet when available
- * (mostly mobile), otherwise copies the text to the clipboard.
- */
-export async function shareText(text: string): Promise<ShareResult> {
-  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-    try {
-      await navigator.share({ text })
-      return 'shared'
-    } catch (err) {
-      // AbortError = user dismissed the sheet; treat as a no-op, not a failure.
-      if (err instanceof DOMException && err.name === 'AbortError') return 'failed'
-      // Fall through to clipboard on any other share error.
-    }
-  }
-  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text)
-      return 'copied'
-    } catch {
-      return 'failed'
-    }
-  }
-  return 'failed'
-}
-
-export function buildShareText(opts: {
+export function buildShareMessage(opts: {
   modeLabel: string
   score: number
   rank: number | null
   total: number | null
-  url: string
 }): string {
-  const { modeLabel, score, rank, total, url } = opts
+  const { modeLabel, score, rank, total } = opts
   const rankPart = rank && total ? ` — rank #${rank} of ${total}` : ''
-  return `💪 I scored ${score} on Plate Math ${modeLabel}${rankPart}. Can you beat me? ${url} 💪`
+  return `💪 I scored ${score} on Plate Math ${modeLabel}${rankPart}. Can you beat me? 💪`
+}
+
+/** Copy text to the clipboard. Returns false if the clipboard API is unavailable. */
+export async function copyText(text: string): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch {
+      return false
+    }
+  }
+  return false
+}
+
+export type ShareTargetId = 'x' | 'whatsapp' | 'reddit' | 'telegram'
+
+/** Build the web-intent URL for a given social target. */
+export function shareIntentUrl(target: ShareTargetId, message: string, url: string): string {
+  const m = encodeURIComponent(message)
+  const u = encodeURIComponent(url)
+  const both = encodeURIComponent(`${message} ${url}`)
+  switch (target) {
+    case 'x':
+      return `https://twitter.com/intent/tweet?text=${m}&url=${u}`
+    case 'whatsapp':
+      return `https://wa.me/?text=${both}`
+    case 'reddit':
+      return `https://www.reddit.com/submit?title=${m}&url=${u}`
+    case 'telegram':
+      return `https://t.me/share/url?url=${u}&text=${m}`
+  }
 }
