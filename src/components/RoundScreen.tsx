@@ -6,6 +6,7 @@ import { Confetti } from './Confetti'
 import { MultipleChoice } from './MultipleChoice'
 import { NumberPad } from './NumberPad'
 import { correctChime, plateCascade, tinyTap, wrongBuzz } from '../game/sound'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 type Props = {
   state: SessionState
@@ -15,18 +16,6 @@ type Props = {
   onAnswer: (value: number) => void
   onNext: () => void
   onQuit: () => void
-}
-
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 640px)')
-    const update = () => setIsMobile(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-  return isMobile
 }
 
 export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer, onNext, onQuit }: Props) {

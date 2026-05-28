@@ -215,8 +215,9 @@ export function Barbell({ bar, perSide, animKey, hop, shake, monochrome, compact
           textAnchor="middle"
           className="barbell__bar-label"
           fill="#7a705b"
+          style={{ fontSize: compact ? 26 : 18 }}
         >
-          {bar.label}
+          Bar {bar.weight} {bar.unit}
         </text>
       </g>
     </svg>

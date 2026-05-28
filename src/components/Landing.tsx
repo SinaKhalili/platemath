@@ -5,6 +5,7 @@ import { Barbell } from './Barbell'
 import { BARS, plate } from '../game/plates'
 import { Leaderboard } from './Leaderboard'
 import { api } from '../../convex/_generated/api'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 type Props = {
   onStart: (mode: Mode) => void
@@ -25,6 +26,7 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
   const heroPlates = [plate(45, 'lb'), plate(25, 'lb')]
   const [optionsOpen, setOptionsOpen] = useState(false)
   const lifterClicks = useRef(0)
+  const isMobile = useIsMobile()
 
   function onLifterClick() {
     lifterClicks.current += 1
@@ -54,7 +56,13 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
         </p>
 
         <div className="mt-8 mb-4 select-none pointer-events-none">
-          <Barbell bar={BARS['lb-45']} perSide={heroPlates} animKey="hero" monochrome={settings.monochrome} />
+          <Barbell
+            bar={BARS['lb-45']}
+            perSide={heroPlates}
+            animKey="hero"
+            monochrome={settings.monochrome}
+            compact={isMobile}
+          />
         </div>
 
         <div className="card p-6 md:p-8 mt-4">
