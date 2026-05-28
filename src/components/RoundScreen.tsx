@@ -17,7 +17,20 @@ type Props = {
   onQuit: () => void
 }
 
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  return isMobile
+}
+
 export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer, onNext, onQuit }: Props) {
+  const isMobile = useIsMobile()
   const round = state.round!
   const config = MODES[state.mode]
   const total = config.rounds === 'endless' ? '∞' : config.rounds
@@ -95,7 +108,7 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
       </div>
 
       {/* Barbell */}
-      <div className="flex-1 flex items-center justify-center py-4">
+      <div className="round-stage flex-1 flex items-center justify-center py-4">
         <div className="w-full relative">
           <Barbell
             bar={round.bar}
@@ -108,6 +121,7 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
             hop={showingResult && wasCorrect}
             shake={showingResult && !wasCorrect}
             monochrome={monochrome}
+            compact={isMobile}
           />
           {showingResult && wasCorrect && (
             <>

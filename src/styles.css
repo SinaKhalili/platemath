@@ -962,3 +962,32 @@ button[disabled] {
     animation: none !important;
   }
 }
+
+/* --- Mobile: smaller input controls so the bigger weights have room --- */
+@media (max-width: 640px) {
+  .number-display {
+    font-size: 38px;
+    padding: 10px 18px;
+    min-width: 0;
+  }
+  .number-display__unit { font-size: 18px; }
+  .keypad-key {
+    height: 50px;
+    font-size: 22px;
+    border-radius: 14px;
+    box-shadow: 0 4px 0 #DDB57A, 0 6px 10px -6px rgba(221, 181, 122, 0.55);
+  }
+  .keypad-key:active {
+    box-shadow: 0 2px 0 #DDB57A, 0 3px 6px -3px rgba(221, 181, 122, 0.5);
+  }
+  .choice-card {
+    font-size: 24px;
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+  /* Tighten the numpad form gaps (set inline as gap-4 / gap-3). */
+  .keypad-form { gap: 10px; }
+  .keypad-grid { gap: 10px; }
+  /* Trim the barbell's vertical padding so it can grow taller. */
+  .round-stage { padding-top: 4px; padding-bottom: 4px; }
+}

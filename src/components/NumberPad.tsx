@@ -54,7 +54,7 @@ export function NumberPad({ onSubmit, disabled, unit, focusKey }: Props) {
 
   return (
     <form
-      className="flex flex-col items-stretch gap-4 w-full max-w-sm mx-auto"
+      className="keypad-form flex flex-col items-stretch gap-4 w-full max-w-sm mx-auto"
       onSubmit={(e) => {
         e.preventDefault()
         submit()
@@ -77,7 +77,7 @@ export function NumberPad({ onSubmit, disabled, unit, focusKey }: Props) {
         />
         <span className="number-display__unit">{unit}</span>
       </label>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="keypad-grid grid grid-cols-3 gap-3">
         {keys.map((k) => (
           <button
             key={k}

@@ -11,6 +11,13 @@ type Props = {
   shake?: boolean
   /** Render every plate in the same gray (no Olympic colors). */
   monochrome?: boolean
+  /**
+   * Frame the viewBox tightly around the loaded plates (cropping the empty
+   * sleeve ends) so plates render larger. Used on mobile, where the full-length
+   * bar would otherwise shrink the weights. Auto-scales with the load so plates
+   * are never clipped.
+   */
+  compact?: boolean
 }
 
 const MONO_PALETTE = {
@@ -62,7 +69,7 @@ const C = {
   knurl: '#6F6759',
 }
 
-export function Barbell({ bar, perSide, animKey, hop, shake, monochrome }: Props) {
+export function Barbell({ bar, perSide, animKey, hop, shake, monochrome, compact }: Props) {
   // Plates are pre-sorted largest first. Stack them outward from the bushing.
   const renderPlates: Plate[] = monochrome
     ? perSide.map((p) => ({ ...p, color: MONO_PALETTE.color, ring: MONO_PALETTE.ring }))
@@ -84,9 +91,17 @@ export function Barbell({ bar, perSide, animKey, hop, shake, monochrome }: Props
   const knurlCols = 22
   const knurlGap = (SHAFT_HALF * 2 - 16) / (knurlCols - 1)
 
+  // Compact framing: crop the empty sleeve ends down to the loaded region so
+  // the weights fill more of the (narrow) viewport. Symmetric about the center.
+  const stackOuter = placed.length ? placed[placed.length - 1].offset + placed[placed.length - 1].width : 0
+  const leftPlateEdge = PLATE_INNER_EDGE_LEFT - stackOuter
+  const COMPACT_MARGIN = 60
+  const vbX = compact ? Math.max(0, leftPlateEdge - COMPACT_MARGIN) : 0
+  const vbW = VBW - 2 * vbX
+
   return (
     <svg
-      viewBox={`0 0 ${VBW} ${VBH}`}
+      viewBox={`${vbX} 0 ${vbW} ${VBH}`}
       className={`barbell ${hop ? 'barbell--hop' : ''} ${shake ? 'barbell--shake' : ''}`}
       aria-label={`Barbell loaded with ${perSide.length * 2} plates`}
       role="img"
