@@ -15,3 +15,11 @@ todos.json
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+# Local agent/skill tooling (not part of the project)
+.agents/
+.claude/
+skills-lock.json
+posthog-setup-report.md
+AGENTS.md
+CLAUDE.md

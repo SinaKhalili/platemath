@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useMutation } from 'convex/react'
+import { usePostHog } from '@posthog/react'
 import { MODES, type Mode, type Settings } from '../game/state'
 import { Barbell } from './Barbell'
 import { BARS, plate } from '../game/plates'
@@ -23,6 +24,7 @@ const MODE_STYLES: Record<Mode, string> = {
 }
 
 export function Landing({ onStart, bests, settings, setSettings }: Props) {
+  const posthog = usePostHog()
   const heroPlates = [plate(45, 'lb'), plate(25, 'lb')]
   const [optionsOpen, setOptionsOpen] = useState(false)
   const lifterClicks = useRef(0)
@@ -70,7 +72,10 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
             {MODE_ORDER.map((m) => (
               <button
                 key={m}
-                onClick={() => onStart(m)}
+                onClick={() => {
+                  posthog.capture('game_started', { mode: m })
+                  onStart(m)
+                }}
                 className={`${MODE_STYLES[m]} text-left flex-col py-6`}
                 style={{ alignItems: 'flex-start' }}
                 type="button"
@@ -108,13 +113,19 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
                 label="Multiple choice"
                 hint="On = tap an option. Off = type the answer."
                 checked={settings.inputMode === 'choice'}
-                onChange={(v) => setSettings({ inputMode: v ? 'choice' : 'numpad' })}
+                onChange={(v) => {
+                  posthog.capture('settings_changed', { setting: 'input_mode', value: v ? 'choice' : 'numpad' })
+                  setSettings({ inputMode: v ? 'choice' : 'numpad' })
+                }}
               />
               <Toggle
                 label="Colored plates"
                 hint="Off = uniform gray, no Olympic colors"
                 checked={!settings.monochrome}
-                onChange={(v) => setSettings({ monochrome: !v })}
+                onChange={(v) => {
+                  posthog.capture('settings_changed', { setting: 'colored_plates', value: v })
+                  setSettings({ monochrome: !v })
+                }}
               />
             </div>
           )}
@@ -152,6 +163,7 @@ type NameEditorProps = {
 }
 
 function NameEditor({ name, playerId, onSave }: NameEditorProps) {
+  const posthog = usePostHog()
   const rename = useMutation(api.scores.rename)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(name)
@@ -160,6 +172,7 @@ function NameEditor({ name, playerId, onSave }: NameEditorProps) {
     const cleaned = draft.trim().slice(0, 20)
     setEditing(false)
     if (cleaned.length === 0 || cleaned === name) return
+    posthog.capture('leaderboard_name_saved', { is_new: name.trim().length === 0 })
     onSave(cleaned)
     // Update the player's existing leaderboard rows so the rename is retroactive.
     void rename({ playerId, name: cleaned })

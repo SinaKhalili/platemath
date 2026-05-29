@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { usePostHog } from '@posthog/react'
 import { copyText, shareIntentUrl, type ShareTargetId } from '../game/share'
 
 type Props = {
@@ -13,6 +14,7 @@ const SECONDARY: { id: ShareTargetId; label: string; brand: string }[] = [
 ]
 
 export function ShareButtons({ message, url }: Props) {
+  const posthog = usePostHog()
   const [text, setText] = useState(message)
   const [copied, setCopied] = useState(false)
   const edited = useRef(false)
@@ -26,6 +28,7 @@ export function ShareButtons({ message, url }: Props) {
   async function onCopy() {
     const ok = await copyText(`${text} ${url}`)
     if (ok) {
+      posthog.capture('score_shared', { target: 'copy' })
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
     }
@@ -55,6 +58,7 @@ export function ShareButtons({ message, url }: Props) {
           href={shareIntentUrl('x', text, url)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => posthog.capture('score_shared', { target: 'x' })}
         >
           Post to X
         </a>
@@ -68,6 +72,7 @@ export function ShareButtons({ message, url }: Props) {
             href={shareIntentUrl(t.id, text, url)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => posthog.capture('score_shared', { target: t.id })}
           >
             {t.label}
           </a>

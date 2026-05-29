@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation } from 'convex/react'
+import { usePostHog } from '@posthog/react'
 import type { SessionState, Settings } from '../game/state'
 import { MODES } from '../game/state'
 import { api } from '../../convex/_generated/api'
@@ -29,8 +30,31 @@ export function PostSession({
   onHome,
   isNewBest,
 }: Props) {
+  const posthog = usePostHog()
+  const didCaptureRef = useRef(false)
   const cfg = MODES[state.mode]
   const isRanked = state.mode === 'sprint' || state.mode === 'challenge'
+
+  useEffect(() => {
+    if (didCaptureRef.current) return
+    didCaptureRef.current = true
+    posthog.capture('game_completed', {
+      mode: state.mode,
+      score: state.score,
+      rounds: state.history.length,
+      accuracy: Math.round(accuracy * 100),
+      elapsed_ms: state.sessionElapsedMs,
+      best_streak: state.bestStreak,
+      is_new_best: isNewBest,
+    })
+    if (isNewBest) {
+      posthog.capture('new_personal_best', {
+        mode: state.mode,
+        score: state.score,
+      })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10">
       <div className="card p-8 md:p-10 max-w-lg w-full text-center">
@@ -108,6 +132,7 @@ function LeaderboardSubmit({
   setSettings: (partial: Partial<Settings>) => void
   accuracy: number
 }) {
+  const posthog = usePostHog()
   const submit = useMutation(api.scores.submit)
   const [status, setStatus] = useState<SubmitStatus>('idle')
   const [draftName, setDraftName] = useState('')
@@ -132,9 +157,17 @@ function LeaderboardSubmit({
       rounds: state.history.length,
       bestStreak: state.bestStreak,
     })
-      .then(() => setStatus('submitted'))
+      .then(() => {
+        setStatus('submitted')
+        posthog.capture('score_submitted', {
+          mode: state.mode,
+          score: state.score,
+          accuracy: Math.round(accuracy * 100),
+          rounds: state.history.length,
+        })
+      })
       .catch(() => setStatus('error'))
-  }, [submit, settings.playerName, settings.playerId, settings.devMode, state, accuracy])
+  }, [submit, settings.playerName, settings.playerId, settings.devMode, state, accuracy, posthog])
 
   if (settings.devMode) {
     return (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { usePostHog } from '@posthog/react'
 import { MODES, type SessionState } from '../game/state'
 import { breakdown, formatTotal, type Round } from '../game/rounds'
 import { Barbell } from './Barbell'
@@ -19,12 +20,34 @@ type Props = {
 }
 
 export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer, onNext, onQuit }: Props) {
+  const posthog = usePostHog()
   const isMobile = useIsMobile()
   const round = state.round!
   const config = MODES[state.mode]
   const total = config.rounds === 'endless' ? '∞' : config.rounds
   const isTimed = config.scoring === 'tally'
   const [picked, setPicked] = useState<number | null>(null)
+
+  function handleAnswer(value: number) {
+    const correct = Math.abs(value - round.total) < 0.001
+    posthog.capture('round_answered', {
+      mode: state.mode,
+      tier: round.tier,
+      correct,
+      elapsed_ms: Date.now() - state.roundStartedAt,
+      round_index: state.roundIndex,
+    })
+    onAnswer(value)
+  }
+
+  function handleQuit() {
+    posthog.capture('session_quit', {
+      mode: state.mode,
+      score: state.score,
+      round_index: state.roundIndex,
+    })
+    onQuit()
+  }
 
   // Reset multiple-choice pick state when the round itself changes.
   // Intentionally NOT depending on phase — the correct/wrong flash on the
@@ -55,14 +78,14 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
   function handlePick(i: number) {
     if (state.phase !== 'playing') return
     setPicked(i)
-    onAnswer(round.choices[i])
+    handleAnswer(round.choices[i])
   }
 
   return (
     <div className="min-h-screen flex flex-col px-4 py-6 max-w-3xl mx-auto w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <button onClick={onQuit} className="chip hover:scale-105 transition-transform" type="button">
+        <button onClick={handleQuit} className="chip hover:scale-105 transition-transform" type="button">
           ← Quit
         </button>
         {isTimed ? (
@@ -149,7 +172,7 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
             />
           ) : (
             <NumberPad
-              onSubmit={onAnswer}
+              onSubmit={handleAnswer}
               unit={round.unit}
               disabled={state.phase !== 'playing'}
               focusKey={state.roundIndex}
