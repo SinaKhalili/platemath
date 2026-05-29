@@ -173,12 +173,16 @@ function realisticBuild(target: number, unit: Unit): Pick<Round, 'bar' | 'perSid
 // plate ever appears), no kg, but a 2.5 lb plate can show up at the harder
 // totals to keep some variety. Difficulty mix is built into the target list.
 const SPRINT_LB_TARGETS: number[] = [
-  // Warm
-  95, 115, 125, 135, 145, 155, 165, 185, 195, 205, 215, 225,
-  // Mid
-  235, 245, 255, 265, 275, 285, 295, 305, 315, 325, 335, 365, 385,
+  // Warmups & light
+  55, 65, 75, 85, 95, 105, 115, 125, 135, 145, 155, 165, 175,
+  // Working sets
+  185, 195, 205, 215, 225, 235, 245, 255, 265, 275, 285, 295,
   // Heavy
-  405, 425, 455, 475, 495,
+  305, 315, 325, 335, 345, 355, 365, 375, 385, 395, 405,
+  // Plates-deep
+  415, 425, 435, 445, 455, 465, 475, 485, 495, 515, 545,
+  // A few that need a 2.5 (half-plate brain teasers)
+  70, 90, 130, 150, 230, 250, 320, 410,
 ]
 const SPRINT_LB_PLATES = [45, 25, 10, 5, 2.5] as const
 

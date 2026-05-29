@@ -189,14 +189,15 @@ export function useGame() {
     })
   }, [])
 
-  function buildRound(mode: Mode, roundIndex: number, prevTotal?: number) {
+  function buildRound(mode: Mode, roundIndex: number, avoid: number[] = []) {
     const cfg = MODES[mode]
     const totalRounds = cfg.rounds === 'endless' ? 25 : cfg.rounds
     const tier = tierForRound(roundIndex, totalRounds, cfg.maxTier)
     const pick = () => (mode === 'sprint' ? generateSprintRound() : generateRealisticRound(tier))
-    for (let attempt = 0; attempt < 10; attempt++) {
+    // Don't repeat a total that appeared in the last two rounds.
+    for (let attempt = 0; attempt < 16; attempt++) {
       const round = pick()
-      if (prevTotal === undefined || round.total !== prevTotal) return round
+      if (!avoid.includes(round.total)) return round
     }
     return pick()
   }
@@ -281,7 +282,11 @@ export function useGame() {
       const nextIndex = s.roundIndex + 1
       const sessionOver = config.rounds !== 'endless' && nextIndex >= config.rounds
       if (sessionOver) return finalize(s)
-      const round = buildRound(s.mode, nextIndex, s.round?.total)
+      // Avoid repeating any total shown in the last two rounds.
+      const avoid = [s.round?.total, ...s.history.slice(-2).map((h) => h.round.total)].filter(
+        (t): t is number => typeof t === 'number',
+      )
+      const round = buildRound(s.mode, nextIndex, avoid)
       return {
         ...s,
         roundIndex: nextIndex,
