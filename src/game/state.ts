@@ -42,6 +42,8 @@ export type Phase = 'landing' | 'playing' | 'reveal' | 'finished'
 export type Settings = {
   monochrome: boolean
   inputMode: 'choice' | 'numpad'
+  /** Sound effects on/off. */
+  soundOn: boolean
   /** Empty string means we've never asked for a name; non-empty is what they typed. */
   playerName: string
   /** Stable per-device UUID. Generated once on first load; never shown to the user. */
@@ -53,6 +55,7 @@ export type Settings = {
 const DEFAULT_SETTINGS: Settings = {
   monochrome: false,
   inputMode: 'numpad',
+  soundOn: true,
   playerName: '',
   playerId: '',
   devMode: false,

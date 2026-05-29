@@ -127,6 +127,15 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
                   setSettings({ monochrome: !v })
                 }}
               />
+              <Toggle
+                label="Sound effects"
+                hint="Plate drops, chimes, and the rest"
+                checked={settings.soundOn}
+                onChange={(v) => {
+                  posthog.capture('settings_changed', { setting: 'sound', value: v })
+                  setSettings({ soundOn: v })
+                }}
+              />
             </div>
           )}
 

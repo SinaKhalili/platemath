@@ -4,11 +4,22 @@ import { useGame } from '../game/state'
 import { Landing } from './Landing'
 import { PostSession } from './PostSession'
 import { RoundScreen } from './RoundScreen'
+import { primeAudio, setMuted } from '../game/sound'
 
 export function Game() {
   const game = useGame()
   const { state, settings } = game
   const posthog = usePostHog()
+
+  // Unlock audio on the first user gesture (required on mobile).
+  useEffect(() => {
+    primeAudio()
+  }, [])
+
+  // Keep the audio engine in sync with the sound setting.
+  useEffect(() => {
+    setMuted(!settings.soundOn)
+  }, [settings.soundOn])
 
   // Tie PostHog events to the stable per-device playerId (the same id the
   // leaderboard uses) so analytics and scores line up, and keep the person's

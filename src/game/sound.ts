@@ -9,7 +9,7 @@ function ensure(): AudioContext | null {
     if (!Ctor) return null
     ctx = new Ctor()
     masterGain = ctx.createGain()
-    masterGain.gain.value = 0.45
+    masterGain.gain.value = muted ? 0 : 0.45
     masterGain.connect(ctx.destination)
   }
   if (ctx.state === 'suspended') void ctx.resume()
@@ -23,6 +23,26 @@ export function setMuted(m: boolean) {
 
 export function isMuted() {
   return muted
+}
+
+// Mobile browsers (iOS especially) create the AudioContext suspended and only
+// allow resuming it from inside a user gesture. Bind a one-time unlock to the
+// first interaction so later programmatic sounds (which fire from effects, not
+// taps) actually play.
+let primed = false
+export function primeAudio() {
+  if (primed || typeof window === 'undefined') return
+  primed = true
+  const unlock = () => {
+    const c = ensure()
+    if (c && c.state === 'suspended') void c.resume()
+    window.removeEventListener('pointerdown', unlock)
+    window.removeEventListener('touchend', unlock)
+    window.removeEventListener('keydown', unlock)
+  }
+  window.addEventListener('pointerdown', unlock)
+  window.addEventListener('touchend', unlock)
+  window.addEventListener('keydown', unlock)
 }
 
 function envelope(
