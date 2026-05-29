@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 type Props = {
   onSubmit: (value: number) => void
@@ -9,6 +10,7 @@ type Props = {
 }
 
 export function NumberPad({ onSubmit, disabled, unit, focusKey }: Props) {
+  const isMobile = useIsMobile()
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -65,7 +67,11 @@ export function NumberPad({ onSubmit, disabled, unit, focusKey }: Props) {
           ref={inputRef}
           className="number-display__input"
           type="text"
-          inputMode="decimal"
+          // On mobile the on-screen keypad does the typing; a read-only input
+          // keeps the focus ring and value display without triggering the OS
+          // soft keyboard. Desktop stays editable for physical-keyboard typing.
+          inputMode={isMobile ? 'none' : 'decimal'}
+          readOnly={isMobile}
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
