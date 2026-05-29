@@ -2,6 +2,7 @@ import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
+import { PostHogProvider } from '@posthog/react'
 
 import appCss from '../styles.css?url'
 
@@ -63,7 +64,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {wrapped}
+        <PostHogProvider
+          apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN!}
+          options={{
+            // Dev proxies /ingest through Vite; prod talks to PostHog directly
+            // (the Vite proxy doesn't exist in the deployed Worker).
+            api_host: import.meta.env.DEV
+              ? '/ingest'
+              : (import.meta.env.VITE_PUBLIC_POSTHOG_HOST as string) || 'https://us.i.posthog.com',
+            ui_host: 'https://us.posthog.com',
+            defaults: '2025-05-24',
+            capture_exceptions: true,
+            debug: import.meta.env.DEV,
+          }}
+        >
+          {wrapped}
+        </PostHogProvider>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
