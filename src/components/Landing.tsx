@@ -149,9 +149,6 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
         </div>
 
         <p className="text-center text-sm mt-8 text-ink-700/60">
-          Bar weight is included. Remove colours in options.
-        </p>
-        <p className="text-center text-sm mt-3 text-ink-700/60">
           made by{' '}
           <a className="footer-link" href="https://x.com/sinathagreat" target="_blank" rel="noopener noreferrer">
             sina
