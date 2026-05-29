@@ -753,6 +753,19 @@ button[disabled] {
   flex-shrink: 0;
 }
 
+/* Footer credit links */
+.footer-link {
+  color: var(--color-peach-400);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1.5px solid transparent;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.footer-link:hover {
+  color: var(--color-peach-300);
+  border-bottom-color: currentColor;
+}
+
 /* Hidden dev toggle: the lifter emoji in the tagline chip */
 .lifter-secret {
   background: none;

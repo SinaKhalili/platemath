@@ -151,6 +151,22 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
         <p className="text-center text-sm mt-8 text-ink-700/60">
           Bar weight is included. Remove colours in options.
         </p>
+        <p className="text-center text-sm mt-3 text-ink-700/60">
+          made by{' '}
+          <a className="footer-link" href="https://x.com/sinathagreat" target="_blank" rel="noopener noreferrer">
+            sina
+          </a>
+          , code on{' '}
+          <a
+            className="footer-link"
+            href="https://github.com/SinaKhalili/platemath"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            github
+          </a>
+          , dedicated to the iron and those who lift it repeatedly
+        </p>
       </div>
     </div>
   )
