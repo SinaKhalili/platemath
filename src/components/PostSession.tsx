@@ -184,7 +184,7 @@ function LeaderboardSubmit({
         className="mb-6 rounded-2xl bg-white/60 p-4 border-2 border-peach-300/40"
         onSubmit={(e) => {
           e.preventDefault()
-          const cleaned = draftName.trim().slice(0, 20)
+          const cleaned = draftName.trim().slice(0, 16)
           if (cleaned.length === 0) return
           setSettings({ playerName: cleaned })
           // The effect above will pick up the new name and submit.
@@ -198,7 +198,7 @@ function LeaderboardSubmit({
             value={draftName}
             onChange={(e) => setDraftName(e.target.value)}
             placeholder="Your name"
-            maxLength={20}
+            maxLength={16}
             className="leaderboard-name-input flex-1"
             type="text"
           />

@@ -182,7 +182,7 @@ function NameEditor({ name, playerId, onSave }: NameEditorProps) {
   const [draft, setDraft] = useState(name)
 
   function commit() {
-    const cleaned = draft.trim().slice(0, 20)
+    const cleaned = draft.trim().slice(0, 16)
     setEditing(false)
     if (cleaned.length === 0 || cleaned === name) return
     posthog.capture('leaderboard_name_saved', { is_new: name.trim().length === 0 })
@@ -233,7 +233,7 @@ function NameEditor({ name, playerId, onSave }: NameEditorProps) {
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         placeholder="Your name"
-        maxLength={20}
+        maxLength={16}
         className="leaderboard-name-input flex-1"
         type="text"
         onBlur={commit}

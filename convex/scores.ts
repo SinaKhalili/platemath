@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 
-const MAX_NAME_LEN = 20
+const MAX_NAME_LEN = 16
 
 function normalizeName(raw: string): { display: string; key: string } {
   // Strip control chars, collapse whitespace, cap length.
