@@ -50,7 +50,7 @@ export function FullLeaderboard({ mode, title, playerId, onClose }: Props) {
         {rows === undefined ? (
           <div className="leaderboard__empty">Loading…</div>
         ) : rows.length === 0 ? (
-          <div className="leaderboard__empty">No scores yet — be the first!</div>
+          <div className="leaderboard__empty">No scores yet</div>
         ) : (
           <>
             {myRank >= 0 && (

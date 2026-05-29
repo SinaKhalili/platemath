@@ -34,7 +34,7 @@ export const MODES: Record<Mode, ModeConfig> = {
     blurb: 'Do 25 rounds as fast as you can.',
     scoring: 'points',
   },
-  practice: { id: 'practice', label: 'Practice', rounds: 'endless', maxTier: 4, blurb: 'Endless drilling. No score.', scoring: 'points' },
+  practice: { id: 'practice', label: 'Practice', rounds: 'endless', maxTier: 4, blurb: 'Endless drilling without a score.', scoring: 'points' },
 }
 
 export type Phase = 'landing' | 'playing' | 'reveal' | 'finished'

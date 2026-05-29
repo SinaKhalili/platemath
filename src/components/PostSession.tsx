@@ -61,7 +61,7 @@ export function PostSession({
         {isNewBest && (
           <div className="chip mb-4 mx-auto" style={{ background: '#FFE9C7', color: '#9A5A1A' }}>
             <span>🏆</span>
-            <span>New personal best</span>
+            <span>New PR LFGGGG</span>
           </div>
         )}
         <h2 className="fancy-headline text-3xl mb-1">Rack it up</h2>
@@ -191,7 +191,7 @@ function LeaderboardSubmit({
         }}
       >
         <div className="fancy-headline text-lg mb-1">Save to the leaderboard?</div>
-        <p className="text-sm text-ink-700/70 mb-3">Pick a name — used for global high scores.</p>
+        <p className="text-sm text-ink-700/70 mb-3">Pick a name, used for global high scores.</p>
         <div className="flex gap-2">
           <input
             autoFocus

@@ -47,7 +47,7 @@ export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
       )}
 
       {rows.length === 0 ? (
-        <div className="leaderboard__empty">No scores yet — you're the first!</div>
+        <div className="leaderboard__empty">You're the first!</div>
       ) : (
         <ol className="leaderboard__list text-left">
           {top.map((r, i) => (

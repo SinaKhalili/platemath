@@ -46,7 +46,7 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
             <button type="button" className="lifter-secret" onClick={onLifterClick} aria-label="Plate Math">
               🏋️‍♀️
             </button>
-            <span>Mental gym math, made fun</span>
+            <span>Numeracy based lifting</span>
             {settings.devMode && <span className="dev-badge">DEV · 5s sprint</span>}
           </span>
         </div>
@@ -54,7 +54,7 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
           Plate <span className="text-peach-400">Math</span>
         </h1>
         <p className="text-center text-lg mt-3 max-w-xl mx-auto text-ink-700/80">
-          What's on the bar? Tap the right total before your spotter loses count.
+          Enter the bar total and sharpen your gym sense.
         </p>
 
         <div className="mt-8 mb-4 select-none pointer-events-none">
@@ -149,7 +149,7 @@ export function Landing({ onStart, bests, settings, setSettings }: Props) {
         </div>
 
         <p className="text-center text-sm mt-8 text-ink-700/60">
-          The colors match real Olympic plates. Bar weight counts. Sound on for the full ride.
+          Bar weight is included. Remove colours in options.
         </p>
       </div>
     </div>
@@ -189,7 +189,7 @@ function NameEditor({ name, playerId, onSave }: NameEditorProps) {
                 You appear as <span className="font-extrabold text-ink-800">{name}</span>
               </>
             ) : (
-              'Not set yet — pick one after your first game, or here.'
+              'Not set yet, pick one after your first game, or here.'
             )}
           </div>
         </div>

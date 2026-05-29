@@ -24,7 +24,7 @@ export function Leaderboard({ mode, title, playerId }: Props) {
         {rows === undefined ? (
           <div className="leaderboard__empty">Loading…</div>
         ) : rows.length === 0 ? (
-          <div className="leaderboard__empty">No scores yet — be the first!</div>
+          <div className="leaderboard__empty">No scores yet</div>
         ) : (
           <ol className="leaderboard__list">
             {rows.map((r, i) => {
