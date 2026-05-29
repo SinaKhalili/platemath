@@ -192,7 +192,7 @@ function LeaderboardSubmit({
       >
         <div className="fancy-headline text-lg mb-1">Save to the leaderboard?</div>
         <p className="text-sm text-ink-700/70 mb-3">Pick a name, used for global high scores.</p>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <input
             autoFocus
             value={draftName}
@@ -202,7 +202,11 @@ function LeaderboardSubmit({
             className="leaderboard-name-input flex-1"
             type="text"
           />
-          <button type="submit" className="btn-chunky btn-chunky--mint" disabled={draftName.trim().length === 0}>
+          <button
+            type="submit"
+            className="btn-chunky btn-chunky--mint w-full sm:w-auto"
+            disabled={draftName.trim().length === 0}
+          >
             Save
           </button>
         </div>

@@ -752,6 +752,15 @@ button[disabled] {
   border-radius: 14px;
   flex-shrink: 0;
 }
+@media (max-width: 640px) {
+  .name-editor {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .name-editor__btn {
+    width: 100%;
+  }
+}
 
 /* Footer credit links */
 .footer-link {
