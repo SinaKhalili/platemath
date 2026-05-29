@@ -1,28 +1,19 @@
 # Plate Math 🏋️
 
-A bite-sized game for getting fast at mental barbell math. A loaded bar drops in,
-you call the total weight — tap a multiple-choice answer or type it on the keypad.
-Built to feel like a Suika / Rhythm-Heaven toy: chunky plates, springy animations,
-synthesized sound, global leaderboards.
+A bite-sized game for getting fast at mental barbell math. I made this because
+I was bad at doing the mental math on what weight was on the barbell and thought
+I'd get better by grinding it out with a game. Truly I feel zyzz would be proud.
 
-**Play:** https://platemath.surreali.workers.dev
+**Play:** https://platemath.fun
 
-## Modes
-
-- **Sprint** — as many as you can in 60 seconds. +1 right, −1 wrong, floored at 0.
-- **Challenge** — 25 rounds as fast as you can (your time is the flex).
-- **Practice** — endless, no pressure, no score.
-
-Every round uses canonical "real gym" loadouts — the way a lifter actually loads a
-bar (largest plate first), never two 25s where a 45 would do. Toggle multiple-choice
-vs. typed answers and colored vs. plain-gray plates in Options.
+<p align="center">
+  <img src="docs/screenshot.png" alt="Plate Math — guess the bar total" width="420">
+</p>
 
 ## Tech
 
 - **[TanStack Start](https://tanstack.com/start)** (React 19, Vite) on **Cloudflare Workers**
 - **[Convex](https://convex.dev)** for the global high-score leaderboards
-- **[PostHog](https://posthog.com)** for product analytics
-- Tailwind v4, bespoke SVG barbell, Web Audio synthesized SFX — no asset files
 
 ## Develop
 
