@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { generateRealisticRound, generateSprintRound, tierForRound, type Round } from './rounds'
 
-export type Mode = 'sprint' | 'challenge' | 'practice'
+// Single timed game. (Kept as a one-entry record so the rest of the engine,
+// the leaderboard, and the Convex schema's mode field stay unchanged.)
+export type Mode = 'sprint'
 
 export type Scoring = 'points' | 'tally'
 
@@ -19,22 +21,13 @@ export type ModeConfig = {
 export const MODES: Record<Mode, ModeConfig> = {
   sprint: {
     id: 'sprint',
-    label: 'Sprint',
+    label: 'Play',
     rounds: 'endless',
     maxTier: 4,
     blurb: 'As many as you can in 60 seconds.',
     scoring: 'tally',
     timeLimit: 60,
   },
-  challenge: {
-    id: 'challenge',
-    label: 'Challenge',
-    rounds: 25,
-    maxTier: 4,
-    blurb: 'Do 25 rounds as fast as you can.',
-    scoring: 'points',
-  },
-  practice: { id: 'practice', label: 'Practice', rounds: 'endless', maxTier: 4, blurb: 'Endless drilling without a score.', scoring: 'points' },
 }
 
 export type Phase = 'landing' | 'playing' | 'reveal' | 'finished'
@@ -165,7 +158,7 @@ export function useGame() {
   settingsRef.current = settings
 
   const [state, setState] = useState<SessionState>(() => ({
-    mode: 'challenge',
+    mode: 'sprint',
     roundIndex: 0,
     round: null,
     phase: 'landing',
@@ -230,10 +223,8 @@ export function useGame() {
 
   const finalize = useCallback(
     (s: SessionState): SessionState => {
-      const cfg = MODES[s.mode]
       const elapsed = Date.now() - s.sessionStartedAt
       const finished: SessionState = { ...s, phase: 'finished', sessionElapsedMs: elapsed }
-      if (cfg.scoring === 'points' && s.mode === 'practice') return finished
       const key = bestKey(s.mode)
       const prev = bests[key] ?? 0
       if (s.score > prev) {
@@ -299,6 +290,15 @@ export function useGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finalize])
 
+  // End the run right now (quit) — same as the timer hitting zero: finalize,
+  // save the best, and go to the results screen so the score can be submitted.
+  const endNow = useCallback(() => {
+    setState((s) => {
+      if (s.phase !== 'playing' && s.phase !== 'reveal') return s
+      return finalize(s)
+    })
+  }, [finalize])
+
   const toLanding = useCallback(() => {
     setState((s) => ({ ...s, phase: 'landing' }))
   }, [])
@@ -362,6 +362,7 @@ export function useGame() {
     start,
     answer,
     next,
+    endNow,
     toLanding,
     accuracy,
     avgTimeMs,

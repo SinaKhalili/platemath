@@ -1,12 +1,7 @@
-export function buildShareMessage(opts: {
-  modeLabel: string
-  score: number
-  rank: number | null
-  total: number | null
-}): string {
-  const { modeLabel, score, rank, total } = opts
+export function buildShareMessage(opts: { score: number; rank: number | null; total: number | null }): string {
+  const { score, rank, total } = opts
   const rankPart = rank && total ? ` 🏋️‍♂️ rank #${rank} of ${total}` : ''
-  return `💪 I scored ${score} on Plate Math ${modeLabel}${rankPart}. Can you beat me? 💪`
+  return `💪 I scored ${score} on Plate Math${rankPart}. Can you beat me? 💪`
 }
 
 /** Copy text to the clipboard. Returns false if the clipboard API is unavailable. */

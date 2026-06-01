@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { usePostHog } from '@posthog/react'
-import { MODES, type SessionState } from '../game/state'
-import { breakdown, formatTotal, type Round } from '../game/rounds'
+import { type SessionState } from '../game/state'
+import { formatTotal, type Round } from '../game/rounds'
 import { Barbell } from './Barbell'
 import { Confetti } from './Confetti'
 import { MultipleChoice } from './MultipleChoice'
@@ -15,17 +15,13 @@ type Props = {
   monochrome: boolean
   inputMode: 'choice' | 'numpad'
   onAnswer: (value: number) => void
-  onNext: () => void
   onQuit: () => void
 }
 
-export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer, onNext, onQuit }: Props) {
+export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer, onQuit }: Props) {
   const posthog = usePostHog()
   const isMobile = useIsMobile()
   const round = state.round!
-  const config = MODES[state.mode]
-  const total = config.rounds === 'endless' ? '∞' : config.rounds
-  const isTimed = config.scoring === 'tally'
   const [picked, setPicked] = useState<number | null>(null)
 
   function handleAnswer(value: number) {
@@ -88,19 +84,7 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
         <button onClick={handleQuit} className="chip hover:scale-105 transition-transform" type="button">
           ← Quit
         </button>
-        {isTimed ? (
-          <TimerDisplay seconds={state.timeRemaining ?? 0} />
-        ) : (
-          <div className="flex flex-col items-center gap-1">
-            <div className="chip">
-              Round <span className="font-extrabold ml-1">{state.roundIndex + 1}</span>
-              <span className="opacity-60">/ {total}</span>
-            </div>
-            {state.mode !== 'practice' && (
-              <ElapsedClock startedAt={state.sessionStartedAt} frozenMs={state.sessionElapsedMs} />
-            )}
-          </div>
-        )}
+        <TimerDisplay seconds={state.timeRemaining ?? 0} />
         <div className="chip">
           <span>★</span>
           <span className="font-extrabold">{state.score}</span>
@@ -148,16 +132,14 @@ export function RoundScreen({ state, multiplier, monochrome, inputMode, onAnswer
               </div>
             </>
           )}
-          {showingResult && !wasCorrect && isTimed && (
+          {showingResult && !wasCorrect && (
             <div className="score-pop score-pop--neg">−1</div>
           )}
         </div>
       </div>
 
       {/* Result overlay */}
-      {showingResult && !wasCorrect && !isTimed ? (
-        <WrongCard round={round} given={state.lastAnswer?.given ?? 0} onContinue={onNext} />
-      ) : showingResult && !wasCorrect && isTimed ? (
+      {showingResult && !wasCorrect ? (
         <TimedWrongStrip round={round} />
       ) : (
         <div className="mt-2">
@@ -191,22 +173,6 @@ export function formatElapsed(ms: number): string {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
-function ElapsedClock({ startedAt, frozenMs }: { startedAt: number; frozenMs: number | null }) {
-  const [, force] = useState(0)
-  useEffect(() => {
-    if (frozenMs !== null) return
-    const id = setInterval(() => force((x) => (x + 1) % 1_000_000), 1000)
-    return () => clearInterval(id)
-  }, [frozenMs])
-  const ms = frozenMs !== null ? frozenMs : Date.now() - startedAt
-  return (
-    <div className="chip" style={{ fontVariantNumeric: 'tabular-nums' }}>
-      <span>⏱</span>
-      <span className="font-extrabold">{formatElapsed(ms)}</span>
-    </div>
-  )
-}
-
 function TimerDisplay({ seconds }: { seconds: number }) {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
@@ -223,28 +189,6 @@ function TimedWrongStrip({ round }: { round: Round }) {
     <div className="card p-4 mt-2 mx-auto max-w-md w-full text-center">
       <div className="text-sm text-rose-400 font-bold mb-1">Not quite</div>
       <div className="fancy-headline text-2xl text-mint-500">{formatTotal(round.total, round.unit)}</div>
-    </div>
-  )
-}
-
-function WrongCard({ round, given, onContinue }: { round: Round; given: number; onContinue: () => void }) {
-  return (
-    <div className="card p-6 mt-3 mx-auto max-w-xl w-full">
-      <div className="text-center">
-        <div className="chip mb-3" style={{ background: '#FBE3DF', color: '#9C3A33' }}>
-          Not quite
-        </div>
-        <div className="text-2xl mb-1">
-          You said <span className="font-extrabold">{given}</span>
-        </div>
-        <div className="fancy-headline text-3xl text-mint-500">
-          {formatTotal(round.total, round.unit)}
-        </div>
-        <div className="mt-3 text-ink-700/80 font-mono">{breakdown(round)}</div>
-        <button onClick={onContinue} className="btn-chunky btn-chunky--mint mt-5" type="button">
-          Got it
-        </button>
-      </div>
     </div>
   )
 }

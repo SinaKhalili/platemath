@@ -50,7 +50,6 @@ export function Game() {
         settings={settings}
         setSettings={game.setSettings}
         onPlayAgain={() => game.start(state.mode)}
-        onPractice={() => game.start('practice')}
         onHome={game.toLanding}
         isNewBest={isNewBest}
       />
@@ -64,8 +63,7 @@ export function Game() {
       monochrome={settings.monochrome}
       inputMode={settings.inputMode}
       onAnswer={game.answer}
-      onNext={game.next}
-      onQuit={game.toLanding}
+      onQuit={game.endNow}
     />
   )
 }

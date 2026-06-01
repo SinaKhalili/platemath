@@ -14,7 +14,6 @@ type Props = {
   settings: Settings
   setSettings: (partial: Partial<Settings>) => void
   onPlayAgain: () => void
-  onPractice: () => void
   onHome: () => void
   isNewBest: boolean
 }
@@ -26,14 +25,12 @@ export function PostSession({
   settings,
   setSettings,
   onPlayAgain,
-  onPractice,
   onHome,
   isNewBest,
 }: Props) {
   const posthog = usePostHog()
   const didCaptureRef = useRef(false)
   const cfg = MODES[state.mode]
-  const isRanked = state.mode === 'sprint' || state.mode === 'challenge'
 
   useEffect(() => {
     if (didCaptureRef.current) return
@@ -86,29 +83,20 @@ export function PostSession({
           />
         </div>
 
-        {isRanked && (
-          <LeaderboardSubmit
-            state={state}
-            settings={settings}
-            setSettings={setSettings}
-            accuracy={accuracy}
-          />
-        )}
+        <LeaderboardSubmit
+          state={state}
+          settings={settings}
+          setSettings={setSettings}
+          accuracy={accuracy}
+        />
 
-        {isRanked && settings.playerName.trim().length > 0 && (
-          <PostGameBoard
-            mode={state.mode as 'sprint' | 'challenge'}
-            modeLabel={cfg.label}
-            playerId={settings.playerId}
-          />
+        {settings.playerName.trim().length > 0 && (
+          <PostGameBoard mode={state.mode} modeLabel="Leaderboard" playerId={settings.playerId} />
         )}
 
         <div className="grid gap-3">
           <button onClick={onPlayAgain} className="btn-chunky" type="button">
             Play Again
-          </button>
-          <button onClick={onPractice} className="btn-chunky btn-chunky--ghost" type="button">
-            Try Practice
           </button>
           <button onClick={onHome} className="btn-chunky btn-chunky--ghost" type="button">
             Home
@@ -143,7 +131,6 @@ function LeaderboardSubmit({
     if (didSubmitRef.current) return
     if (settings.devMode) return // dev/test runs never touch the global leaderboard
     if (!settings.playerName.trim()) return
-    if (state.mode !== 'sprint' && state.mode !== 'challenge') return
     didSubmitRef.current = true
     setStatus('submitting')
     submit({

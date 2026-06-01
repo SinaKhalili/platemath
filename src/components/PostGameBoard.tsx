@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { formatElapsed } from './RoundScreen'
 import { FullLeaderboard } from './FullLeaderboard'
 import { buildShareMessage } from '../game/share'
 import { ShareButtons } from './ShareButtons'
 
 type Props = {
-  mode: 'sprint' | 'challenge'
+  mode: 'sprint'
   modeLabel: string
   playerId: string
 }
@@ -30,7 +29,6 @@ export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
   const showOwnRowSeparately = myIndex >= 5
 
   const shareMessage = buildShareMessage({
-    modeLabel,
     score: myRow?.score ?? 0,
     rank: myRank,
     total,
@@ -51,14 +49,14 @@ export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
       ) : (
         <ol className="leaderboard__list text-left">
           {top.map((r, i) => (
-            <Row key={r._id} rank={i + 1} row={r} mode={mode} isMe={r.playerId === playerId} />
+            <Row key={r._id} rank={i + 1} row={r} isMe={r.playerId === playerId} />
           ))}
           {showOwnRowSeparately && myRow && (
             <>
               <li className="postgame-gap" aria-hidden>
                 ⋯
               </li>
-              <Row rank={myRank!} row={myRow} mode={mode} isMe />
+              <Row rank={myRank!} row={myRow} isMe />
             </>
           )}
         </ol>
@@ -82,12 +80,10 @@ export function PostGameBoard({ mode, modeLabel, playerId }: Props) {
 function Row({
   rank,
   row,
-  mode,
   isMe,
 }: {
   rank: number
-  row: { _id: string; name: string; score: number; elapsedMs: number; playerId?: string }
-  mode: 'sprint' | 'challenge'
+  row: { _id: string; name: string; score: number; playerId?: string }
   isMe: boolean
 }) {
   return (
@@ -98,7 +94,6 @@ function Row({
         {isMe ? ' (you)' : ''}
       </span>
       <span className="leaderboard__score">{row.score}</span>
-      {mode === 'challenge' ? <span className="leaderboard__time">{formatElapsed(row.elapsedMs)}</span> : null}
     </li>
   )
 }

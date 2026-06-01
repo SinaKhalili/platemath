@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { formatElapsed } from './RoundScreen'
 import { FullLeaderboard } from './FullLeaderboard'
 
 type Props = {
-  mode: 'sprint' | 'challenge'
+  mode: 'sprint'
   title: string
   playerId: string
 }
@@ -37,9 +36,6 @@ export function Leaderboard({ mode, title, playerId }: Props) {
                   <span className="leaderboard__rank">{i + 1}</span>
                   <span className="leaderboard__name">{r.name}{isMe ? ' (you)' : ''}</span>
                   <span className="leaderboard__score">{r.score}</span>
-                  {mode === 'challenge' ? (
-                    <span className="leaderboard__time">{formatElapsed(r.elapsedMs)}</span>
-                  ) : null}
                 </li>
               )
             })}
