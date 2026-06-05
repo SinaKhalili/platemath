@@ -95,6 +95,8 @@ export const topScores = query({
     const seen = new Set<string>()
     const result: typeof sorted = []
     for (const row of sorted) {
+      // Don't show players whose best score is 0 (a run with no net points).
+      if (row.score <= 0) continue
       const key = row.playerId ?? `legacy:${row.nameKey}`
       if (seen.has(key)) continue
       seen.add(key)
